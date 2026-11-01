@@ -65,9 +65,9 @@ flowchart LR
 
 ![Challenge entry and server-verified community leaderboard](docs/images/leaderboard.png)
 
-**The Community tab.** Example creator tags show how a challenge could be thrown to a familiar community. The tags are illustrative only; these creators have not joined or endorsed the challenge.
+**The Community tab.** Example creator tags show how a challenge could be thrown to a familiar community. The names are made up.
 
-![Community tab with example creator tags](docs/images/community.png)
+![Community tab with made-up example creator tags](docs/images/community.png)
 
 ## A path to deeper game integration
 
