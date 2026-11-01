@@ -1,21 +1,11 @@
-# Public demo — temporary tunnel
+# Hosted demo
 
-Game: https://proposal-openings-saving-innovations.trycloudflare.com
+Game: **https://beat-the-moment-35-211-225-40.sslip.io**
 
-Twitch OAuth redirect URL:
+Twitch OAuth callback: `https://beat-the-moment-35-211-225-40.sslip.io/auth/callback`
 
-```text
-https://proposal-openings-saving-innovations.trycloudflare.com/auth/callback
-```
+The app runs independently of the Mac on GCP project `beat-the-moment-964ea6`. The original six attempts were migrated, and a real cloud guest attempt was added and verified. The public board, completed ghost replay, HTTPS health check, anonymous host denial, and secret-file denial were checked. The seven attempts survived a service restart.
 
-Register the application as **Beat This Moment by 0xtigerclaw**, category **Game Integration**, client type **Confidential**. Confirm the callback is present exactly once and has no duplicated text before creating the application.
+Twitch is connected to `0xtigerclaw` on the cloud host, with EventSub subscription accepted and no connection error. The old Mac-hosted Twitch bridge was disconnected to prevent duplicate replies. The earlier real `!challenge` reply was verified on the local prototype; a new cloud chat reply has not yet been independently confirmed.
 
-The Node server and game data live on your Mac. Cloudflare Tunnel forwards the public HTTPS address to `http://127.0.0.1:3000`. No independent cloud app server has been deployed. Keep the Mac, Node process and tunnel running. Restarting the tunnel changes its address and requires updating both `.env` and Twitch's redirect URL.
-
-Host controls require the `HOST_KEY` in the ignored local `.env` file. Do not share it with viewers. The public leaderboard polls every two seconds because Cloudflare Quick Tunnels do not support SSE.
-
-Verified from the public HTTPS address: public state and shared links, viewer entry, deterministic score verification, leaderboard updates, and denial of anonymous host access.
-
-Twitch application registration and broadcaster OAuth are complete. The server is connected to `0xtigerclaw` through EventSub. The user tested `!challenge` in real chat and confirmed the expected bot reply with the current challenge link. A server restart discards the in-memory OAuth session, so reconnect through the app after restarting it.
-
-OBS profile and scene collection `Beat This Moment` are configured for the dedicated Chrome game window. A short public broadcast to `0xtigerclaw` was verified in a separate Twitch viewer and then stopped. Its local 720p/30 FPS recording is `demo/twitch-broadcast-test.mp4`. This test recording has muted audio and is not the finished hackathon presentation. The existing stream key is saved in OBS, not in this repository.
+See [deploy/GCP.md](deploy/GCP.md) for service administration, persistence, budget alerts, and teardown. The earlier Cloudflare URL is historical demo access and should no longer be shared.

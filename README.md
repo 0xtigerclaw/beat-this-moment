@@ -10,6 +10,8 @@ The idea is to give Twitch communities another way to participate in the moment 
 
 ![The playable challenge and community leaderboard](docs/images/challenge.png)
 
+**[Play the hosted game](https://beat-the-moment-35-211-225-40.sslip.io)** · [GCP deployment](deploy/GCP.md)
+
 [Watch the narrated prototype draft](demo/beat-this-moment-draft.mp4) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](QA.md)
 
 > Working hackathon prototype, built with Codex. The included video is a draft; it still needs footage of host publication, the real chat interaction, and the Codex build process.
@@ -132,7 +134,7 @@ The game works without Twitch. To demonstrate the live integration:
    - `!challenge`: replies with the active challenge link.
    - `!join`: replies with a single-use, ten-minute entry link attributed to the chatter. Subsequent retries in the same page retain that identity for one hour.
 
-The integration uses a broadcaster user access token with `user:read:chat user:write:chat`, an EventSub WebSocket subscription to `channel.chat.message`, and the Send Chat Message API. Tokens are held in server memory, validated at connection and every 55 minutes, refreshed when needed, and discarded on restart. Reauthorize after a restart. EventSub reconnects after interruptions; missed Twitch events are not replayed. Chat replies have a per-user ten-second cooldown and are deduplicated.
+The integration uses a broadcaster user access token with `user:read:chat user:write:chat`, an EventSub WebSocket subscription to `channel.chat.message`, and the Send Chat Message API. Tokens are validated at connection and every 55 minutes and refreshed when needed. By default they stay in memory and are discarded on restart. Set `TWITCH_TOKEN_FILE` and `TWITCH_OWNER_CHANNEL` to save them in a private file and restore the owning broadcaster after restart. The file must be outside the public directory; it is written with mode 0600, and disconnecting Twitch deletes it. Browser host sessions still require sign-in after a restart. EventSub reconnects after interruptions; missed Twitch events are not replayed. Chat replies have a per-user ten-second cooldown and are deduplicated.
 
 Set `TWITCH_OWNER_CHANNEL` to your owning Twitch login. With this set, the owner can sign in directly with Twitch, without copying the host key into the browser. The callback checks a short-lived HttpOnly OAuth nonce cookie and a single-use state, validates the token and scopes with Twitch, and checks the exact owner login before granting a host session. Other Twitch accounts cannot take over the broadcaster connection or host desk. Leave this setting empty to require an existing host session before starting Twitch authorization.
 
@@ -140,13 +142,13 @@ Set `TWITCH_OWNER_CHANNEL` to your owning Twitch login. With this set, the owner
 
 ## Remote viewers / hosting
 
-Localhost links only work on the computer running the server. For remote viewers, use a Node-capable public host or an HTTPS tunnel to port 3000.
+The live demo runs independently on GCP; see [deployment and budget details](deploy/GCP.md). For another deployment, localhost links only work on the computer running the server. For remote viewers, use a Node-capable public host or an HTTPS tunnel to port 3000.
 
 - Set `PUBLIC_URL` to the public HTTPS origin, without a trailing slash.
 - Set a long, random `HOST_KEY`. Remote host controls require this key; enter it in the app's setup dialog. It is never included in public state or challenge links.
 - If binding directly to the network, set `HOST=0.0.0.0`. The server refuses non-local binding without `HOST_KEY`.
 - Register the corresponding `https://your-host/auth/callback` redirect URL in Twitch's developer console, then restart and reauthorize.
-- Keep the same persistent `.data/` directory across restarts. This prototype is a single Node process with JSON storage, not a multi-instance service. Hosting on an ephemeral filesystem loses scores.
+- Set `DATA_DIR` to a persistent state directory, or keep the same `.data/` directory across restarts. This prototype is a single Node process with JSON storage, not a multi-instance service. Hosting on an ephemeral filesystem loses scores.
 
 Host sessions are HttpOnly cookies with an eight-hour lifetime. Credentials and host keys stay server-side. POST routes reject cross-origin browser requests. Scores are recomputed by the server rather than accepted from clients.
 
@@ -172,7 +174,7 @@ All art is drawn procedurally in Canvas/CSS. There are no third-party images, fo
 ## What comes next
 
 - Viewer OAuth for account-bound identities.
-- Persistent cloud hosting and storage for challenges that outlive a local demo.
+- Automated backups and a custom domain for the hosted challenges.
 - Game adapters for titles that can expose restorable state.
 - Streamer controls for challenge duration, moderation, and rematches.
 - Instrumentation to test whether challenges increase participation and repeat play.

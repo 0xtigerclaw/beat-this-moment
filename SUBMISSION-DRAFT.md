@@ -18,18 +18,18 @@ Twitch chat connects the experience: `!challenge` returns the current playable l
 
 Codex helped build a dependency-free Node.js server, a Canvas game, the interface, and the Twitch integration. A fixed-timestep engine runs in both the browser and server. Each attempt records its inputs; the server replays those inputs from the saved snapshot to calculate and verify the result.
 
-The Twitch integration uses broadcaster OAuth, EventSub WebSockets, and the Send Chat Message API. Challenge history and attempts persist in a local JSON store. The prototype is exposed through a temporary HTTPS tunnel, with an OBS scene for streaming and a separate transparent leaderboard overlay.
+The Twitch integration uses broadcaster OAuth, EventSub WebSockets, and the Send Chat Message API. Challenge history and attempts persist in a local JSON store. The prototype runs on a small GCP VM with persistent disk and HTTPS, with an OBS scene for streaming and a separate transparent leaderboard overlay.
 
 ## What we verified
 
-- Ten automated tests cover deterministic replay, snapshot restoration, ranking, host authorization, persistence, OAuth protections, and mocked chat behavior.
+- Eleven automated tests cover deterministic replay, snapshot restoration, ranking, host authorization, persistence, OAuth protections, and mocked chat behavior.
 - Separate-browser testing verified publication, viewer entry, score submission, leaderboard updates, and replay.
 - Real Twitch chat returned the expected `!challenge` reply.
 - A short public broadcast to `0xtigerclaw` was played successfully in a separate signed-out Twitch viewer.
 
 ## Scope and current limitations
 
-This prototype supports one purpose-built browser game. It does not derive playable game state from arbitrary Twitch video. Server replay checks scores but does not prevent tool-assisted inputs. Guest names are unverified; `!join` links are visible bearer links rather than viewer OAuth. The current public URL depends on the Mac and tunnel remaining running.
+This prototype supports one purpose-built browser game. It does not derive playable game state from arbitrary Twitch video. Server replay checks scores but does not prevent tool-assisted inputs. Guest names are unverified; `!join` links are visible bearer links rather than viewer OAuth. The current public URL runs independently on GCP; its single-instance storage remains intended for a prototype.
 
 ## Next
 

@@ -22,4 +22,4 @@ No video has been uploaded and no hackathon entry has been submitted. OBS stream
 - `Scene`: dedicated Chrome game-window capture, cropped to hide its toolbar, with capture audio muted.
 - `Viewer gameplay`: a clean OBS Browser source for the existing public challenge. Use the source's **Interact** button to play. This source has no host authorization and is intended for viewer gameplay.
 
-The source recordings have muted/no narration audio. The assembled draft replaces that with synthetic narration. The game server and public tunnel must stay running for viewers to use the live link.
+The source recordings have muted/no narration audio. The assembled draft replaces that with synthetic narration. The current live game runs independently on GCP. Historical recordings show the earlier temporary tunnel.

@@ -16,7 +16,7 @@ export function createApp(options = {}) {
   const publicUrl = (options.publicUrl || process.env.PUBLIC_URL || `http://localhost:${port}`).replace(/\/$/, '');
   const hostKey = options.hostKey ?? process.env.HOST_KEY ?? '';
   if (!['localhost', '127.0.0.1', '[::1]'].includes(new URL(publicUrl).hostname) && !hostKey) throw new Error('Set HOST_KEY when PUBLIC_URL is public, including when using a tunnel.');
-  const dataDir = options.dataDir || path.join(ROOT, '.data');
+  const dataDir = options.dataDir || process.env.DATA_DIR || path.join(ROOT, '.data');
   const clientId = options.clientId ?? process.env.TWITCH_CLIENT_ID ?? '';
   const clientSecret = options.clientSecret ?? process.env.TWITCH_CLIENT_SECRET ?? '';
   const ownerChannel = (options.ownerChannel ?? process.env.TWITCH_OWNER_CHANNEL ?? '').trim().toLowerCase();
@@ -45,7 +45,7 @@ export function createApp(options = {}) {
   const challengeView = c => c && ({ id: c.id, title: c.title, snapshot: c.snapshot, finish: c.finish, createdAt: c.createdAt, attempts: c.runs.length, leaderboard: board(c), shareUrl: `${publicUrl}/c/${c.id}` });
   const state = () => ({ challenge: challengeView(find(db.activeId)), history: [...db.challenges].reverse().slice(0, 12).map(c => ({ id: c.id, title: c.title, attempts: c.runs.length })), twitch: { ...twitch.state, configured: !!(clientId && clientSecret), ownerLogin: !!ownerChannel, ownerChannel }, publicUrl, updates: new URL(publicUrl).hostname.endsWith('.trycloudflare.com') ? 'poll' : 'events' });
   const broadcast = () => { const payload = `data: ${JSON.stringify(state())}\n\n`; for (const res of clients) res.write(payload); };
-  const twitch = new TwitchBridge({ clientId, clientSecret, redirectUri: `${publicUrl}/auth/callback`, onChange: broadcast, onCommand: (command, user) => {
+  const twitch = new TwitchBridge({ clientId, clientSecret, tokenFile: options.tokenFile ?? process.env.TWITCH_TOKEN_FILE, redirectUri: `${publicUrl}/auth/callback`, onChange: broadcast, onCommand: (command, user) => {
     const c = find(db.activeId);
     if (command === '!challenge') return `Beat this moment: ${publicUrl}/c/${c.id} — jump with Space, dash with Shift. Can you beat the best time?`;
     const token = id(); joins.set(token, { ...user, challengeId: c.id, expires: Date.now() + 10 * 60 * 1000 });
@@ -65,6 +65,7 @@ export function createApp(options = {}) {
     res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'");
     try {
       const url = new URL(req.url, publicUrl);
+      if (req.method === 'GET' && url.pathname === '/healthz') return json(res, { ok: true });
       if (req.method === 'POST') {
         if (req.headers.origin && req.headers.origin !== new URL(publicUrl).origin) throw fail('Origin not permitted.', 403);
         const key = req.socket.remoteAddress;
@@ -167,8 +168,9 @@ export function createApp(options = {}) {
     for (const collection of [joins, playerSessions, oauthStates]) for (const [k,v] of collection) if (v.expires < now) collection.delete(k);
     for (const [k,v] of rates) if (v.at < now - 60000) rates.delete(k);
   }, 60000); cleanup.unref();
-  const close = () => { clearInterval(cleanup); twitch.disconnect(); for (const res of clients) res.end(); server.close(); };
-  return { server, close };
+  const close = () => { clearInterval(cleanup); twitch.disconnect({ forget: false }); for (const res of clients) res.end(); server.close(); };
+  const ready = twitch.restore(ownerChannel).catch(() => twitch.update({ connected: false, connecting: false, error: 'Saved Twitch session could not be restored. Connect Twitch again.' }));
+  return { server, close, ready };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

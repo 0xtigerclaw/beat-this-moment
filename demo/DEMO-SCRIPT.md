@@ -36,10 +36,10 @@ Include actual footage of the Codex build conversation and source or test output
 
 - OBS profile and scene collection: `Beat This Moment`.
 - Capture: dedicated Chrome game window, not the full display.
-- Game address: https://proposal-openings-saving-innovations.trycloudflare.com/?broadcast=1
+- Game address: https://beat-the-moment-35-211-225-40.sslip.io/?broadcast=1
 - Audio capture is muted. Add narration in an editor, or deliberately configure a microphone before recording narration.
 - Output: Hybrid MP4, 1280×720 at 30 FPS, in this directory.
-- The public app depends on the Mac's Node server and temporary Cloudflare Tunnel remaining running.
+- The public app runs independently on GCP; use the hosted address above.
 - Streaming credentials are configured separately. This document contains no credentials.
 
 This is a prepared outline, not evidence of a finished or uploaded video.

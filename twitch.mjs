@@ -1,7 +1,10 @@
 // Installed-bot flow: the broadcaster authorizes their own chat with a user token.
+import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, unlinkSync } from 'node:fs';
+import path from 'node:path';
+
 export class TwitchBridge {
-  constructor({ clientId, clientSecret, redirectUri, onChange, onCommand }) {
-    Object.assign(this, { clientId, clientSecret, redirectUri, onChange, onCommand });
+  constructor({ clientId, clientSecret, redirectUri, onChange, onCommand, tokenFile }) {
+    Object.assign(this, { clientId, clientSecret, redirectUri, onChange, onCommand, tokenFile });
     this.state = { connected: false, connecting: false, channel: null, error: null };
     this.seen = new Set();
     this.lastReplies = new Map();
@@ -18,6 +21,27 @@ export class TwitchBridge {
     if (ownerChannel && user.login.toLowerCase() !== ownerChannel.toLowerCase()) throw new Error(`Sign in as ${ownerChannel} to connect this host desk.`);
     this.tokens = tokens;
     this.user = user;
+    this.startSession();
+  }
+  persistTokens() {
+    if (!this.tokenFile || !this.tokens) return;
+    mkdirSync(path.dirname(this.tokenFile), { recursive: true, mode: 0o700 });
+    writeFileSync(`${this.tokenFile}.tmp`, JSON.stringify(this.tokens), { mode: 0o600 });
+    renameSync(`${this.tokenFile}.tmp`, this.tokenFile);
+  }
+  async restore(ownerChannel = '') {
+    if (!this.tokenFile || !existsSync(this.tokenFile)) return false;
+    this.tokens = JSON.parse(readFileSync(this.tokenFile, 'utf8'));
+    if (!this.tokens?.access_token) throw new Error('Saved Twitch session is invalid. Connect again.');
+    try {
+      await this.validate();
+      if (!ownerChannel || this.user.login.toLowerCase() !== ownerChannel.toLowerCase()) throw new Error('Saved Twitch session does not match the configured owner.');
+      this.startSession();
+      return true;
+    } catch (error) { this.tokens = null; this.user = null; throw error; }
+  }
+  startSession() {
+    this.persistTokens();
     this.stopped = false;
     this.update({ connecting: true, error: null, channel: this.user.login });
     this.connect();
@@ -38,6 +62,7 @@ export class TwitchBridge {
       if (error.status !== 401 || !this.tokens.refresh_token) throw error;
       this.tokens = await this.tokenRequest({ grant_type: 'refresh_token', refresh_token: this.tokens.refresh_token });
       this.user = await this.identity(this.tokens.access_token);
+      this.persistTokens();
     }
   }
   async api(path, body) {
@@ -101,10 +126,11 @@ export class TwitchBridge {
       }
     });
   }
-  disconnect() {
+  disconnect({ forget = true } = {}) {
     this.stopped = true;
     clearTimeout(this.reconnectTimer); clearInterval(this.validationTimer);
     this.socket?.close(); this.tokens = null; this.user = null;
+    if (forget && this.tokenFile && existsSync(this.tokenFile)) unlinkSync(this.tokenFile);
     this.update({ connected: false, connecting: false, channel: null, error: null });
   }
 }

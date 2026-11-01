@@ -31,3 +31,11 @@ OBS has a separate `Beat This Moment` profile and scene collection. Its window-c
 A new automated `!challenge` send has not been confirmed during this broadcast test. The earlier real chat command/reply remains verified. Chrome control was unreliable; an unsent command draft may remain in its chat box.
 
 **Additional gameplay capture:** the `Viewer gameplay` OBS scene uses a Browser source pointed at the existing public challenge. Actual viewer attempts under `Codex demo` were verified and added to the live board, then Guest-636's completed ghost replay was watched through to the completion screen. The raw recording is `demo/viewer-gameplay.mp4` (69.63 seconds). A 78-second narrated draft is saved as `demo/beat-this-moment-draft.mp4`; duration, H.264 720p/30 FPS video, AAC audio, non-silent narration, and representative frames were checked. It still lacks actual host publication, chat interaction, and Codex build footage. The Computer Use tool explicitly blocked access to the Codex app. This remains a draft; it has not been uploaded or submitted.
+
+## GCP verification
+
+The cloud-ready version passes 11 automated tests and syntax checks. The additional test covers private Twitch token persistence, refresh-token rotation, restoration after shutdown, rejection of a different owner, and removal on disconnect.
+
+Project `beat-the-moment-964ea6` hosts a single e2-micro VM, Node.js 24, and Caddy with a valid public HTTPS certificate. Six existing attempts were migrated; a real guest attempt on the cloud service added a seventh. Verified HTTPS health, anonymous host denial, private-file denial, completed replay retrieval, guest submission, and board update. The seven attempts survived a service restart. Twitch reports connected to `0xtigerclaw`, with no error after EventSub subscription. The old Mac bridge is disconnected. A new cloud chat command/reply remains to be confirmed.
+
+Private configuration is root-owned mode 0600. Challenge data and saved Twitch credentials are owned by the unprivileged app user and mode 0600. The VM has no Google service account; public ports are 80/443, and SSH is restricted to IAP. A monthly EUR 10 project budget has alerts at 50%, 80%, and 100%; it is not a spending cap.
