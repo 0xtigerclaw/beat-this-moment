@@ -8,7 +8,7 @@ A streamer crashes, saves a moment from just before the mistake, and challenges 
 
 The idea is to give Twitch communities another way to participate in the moment together: a challenge to accept, a score to react to, and a rematch to come back for.
 
-![A viewer attempt and the community leaderboard](docs/images/challenge.jpg)
+![The playable challenge and community leaderboard](docs/images/challenge.png)
 
 [Watch the narrated prototype draft](demo/beat-this-moment-draft.mp4) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](QA.md)
 
@@ -48,6 +48,20 @@ flowchart LR
     E --> F[Ghost replay and rematch]
     F --> C
 ```
+
+## Gameplay gallery
+
+**The course, captured directly from the running game.** This is the start of Guest-636's recorded run.
+
+![The Neon Freight course with the leading player ghost](docs/images/gameplay.png)
+
+**A winning run to chase.** The ghost replay follows the recorded inputs through the final obstacles toward the finish.
+
+![The winning ghost approaching the finish line](docs/images/ghost-replay.png)
+
+**The community board.** Completed runs rank above crashes; each entry can be replayed.
+
+![Challenge entry and server-verified community leaderboard](docs/images/leaderboard.png)
 
 ## A path to deeper game integration
 
