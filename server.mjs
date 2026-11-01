@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from '
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { initial, replay, validSnapshot, compareRuns, world, PLAYER, FLOOR } from './public/engine.js';
+import { VERSION, initial, replay, validSnapshot, compareRuns, world, PLAYER, FLOOR } from './public/engine.js';
 import { TwitchBridge } from './twitch.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -27,10 +27,11 @@ export function createApp(options = {}) {
   if (existsSync(file)) db = JSON.parse(readFileSync(file, 'utf8'));
   const persist = () => { writeFileSync(`${file}.tmp`, JSON.stringify(db), { mode: 0o600 }); renameSync(`${file}.tmp`, file); };
   const newChallenge = (snapshot, title) => {
-    const c = { id: id(), title, snapshot, finish: Math.min(3600, snapshot.x + 1600), createdAt: Date.now(), runs: [] };
+    const c = { id: id(), title, snapshot, finish: Math.min(3600, snapshot.x + (snapshot.version >= 2 ? 2200 : 1600)), createdAt: Date.now(), runs: [] };
     db.challenges.push(c); db.activeId = c.id; persist(); return c;
   };
-  if (!db.activeId) newChallenge(initial(), 'The opening challenge');
+  if (!db.activeId) newChallenge(initial(), 'Night Shift / hard challenge');
+  else if (!db.challenges.some(c => c.snapshot.version >= VERSION)) newChallenge(initial(), 'Night Shift / hard challenge');
   const sessions = new Map(), runTickets = new Map(), joins = new Map(), playerSessions = new Map(), oauthStates = new Map(), rates = new Map();
   const clients = new Set();
   const find = cid => db.challenges.find(c => c.id === cid);
@@ -90,8 +91,8 @@ export function createApp(options = {}) {
       }
       if (req.method === 'POST' && url.pathname === '/api/challenges') {
         requireHost(req); const { snapshot, title } = await readBody(req);
-        if (!validSnapshot(snapshot) || world(snapshot.seed).finish - snapshot.x < 400) throw fail('Choose a running moment with at least 400m left.');
-        if (world(snapshot.seed).obstacles.some(o => snapshot.x + PLAYER.w > o.x && snapshot.x < o.x + o.w && snapshot.y + PLAYER.h > FLOOR - o.h)) throw fail('This moment starts inside an obstacle. Choose an earlier checkpoint.');
+        if (!validSnapshot(snapshot) || world(snapshot.seed, snapshot.version).finish - snapshot.x < 400) throw fail('Choose a running moment with at least 400m left.');
+        if (world(snapshot.seed, snapshot.version).obstacles.some(o => snapshot.x + PLAYER.w > o.x && snapshot.x < o.x + o.w && snapshot.y + PLAYER.h > FLOOR - o.h)) throw fail('This moment starts inside an obstacle. Choose an earlier checkpoint.');
         const c = newChallenge(snapshot, String(title || 'Beat this moment').trim().slice(0, 60) || 'Beat this moment'); broadcast(); return json(res, challengeView(c), 201);
       }
       if (req.method === 'POST' && url.pathname === '/api/challenges/active') {

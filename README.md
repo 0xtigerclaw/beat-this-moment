@@ -53,17 +53,21 @@ flowchart LR
 
 ## Gameplay gallery
 
-**The course, captured directly from the running game.** This is the start of Guest-636's recorded run.
+**The hard course, captured directly from the running game.** The current round, Night Shift, is a 2,200m course with 13 hazards: tall walls, wide barriers, and double stacks with tight jump windows. The original 1,600m, six-hazard course is kept as course version 1, so earlier challenge links and ghost replays still play exactly as recorded. This is the start of the assisted demo run's ghost replay.
 
-![The Neon Freight course with the leading player ghost](docs/images/gameplay.png)
+![The Neon Freight hard course with the leading ghost](docs/images/gameplay.png)
 
-**A winning run to chase.** The ghost replay follows the recorded inputs through the final obstacles toward the finish.
+**A winning run to chase.** The ghost replay follows the recorded inputs through the final double stack toward the finish. The assisted demo run, an input search over the real simulation and labeled as such on the board, completed the course in 7.48 seconds with ten jumps.
 
 ![The winning ghost approaching the finish line](docs/images/ghost-replay.png)
 
 **The community board.** Completed runs rank above crashes; each entry can be replayed.
 
 ![Challenge entry and server-verified community leaderboard](docs/images/leaderboard.png)
+
+**The Community tab.** Example creator tags show how a challenge could be thrown to a familiar community. The tags are illustrative only; these creators have not joined or endorsed the challenge.
+
+![Community tab with example creator tags](docs/images/community.png)
 
 ## A path to deeper game integration
 
@@ -161,7 +165,7 @@ npm test
 npm run check
 ```
 
-Tests cover deterministic courses, completable jump/dash mechanics, restoration from mid-jump snapshots, replay equivalence, malformed/incomplete run rejection, ranking, host authorization, cross-origin rejection, independent guest entry, duplicate submission prevention and persistence across restarts.
+Tests cover deterministic courses, the harder course version and its upgrade path, completable jump/dash mechanics, restoration from mid-jump snapshots, replay equivalence, malformed/incomplete run rejection, ranking, host authorization, cross-origin rejection, independent guest entry, duplicate submission prevention and persistence across restarts.
 
 Server-side replay prevents fabricated scores but **does not prevent bots, tool-assisted inputs, name impersonation, or determined cheating**. There is no prize/payment system. Twitch OAuth and live chat require your own app credentials and broadcaster authorization, and must be tested with an actual Twitch channel before a hackathon submission.
 

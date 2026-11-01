@@ -23,7 +23,7 @@
         <div class="play-column">
           <div class="section-label"><span id="desk-label">THE HOST DESK</span><span id="round-label">PRACTICE / NO SCORE SUBMITTED</span></div>
           <div class="arena">
-            <div class="arena-top"><div><span class="arena-badge">NF</span><span>NEON FREIGHT<span class="arena-subtitle" id="course-subtitle">Make the jump. Keep your nerve.</span></span></div><span id="game-mode" class="mode-chip">PRACTICE</span></div>
+            <div class="arena-top"><div><span class="arena-badge">NF</span><span>NEON FREIGHT<span class="arena-subtitle" id="course-subtitle">Make the jump. Keep your nerve.</span></span></div><div class="arena-levels"><span id="difficulty" class="difficulty-chip">HARD / NIGHT SHIFT</span><span id="game-mode" class="mode-chip">PRACTICE</span></div></div>
             <div class="canvas-wrap"><canvas id="game" width="1000" height="460" tabindex="0" aria-label="Neon Freight obstacle course. Space or up arrow to jump, Shift to dash."></canvas>
               <div id="game-screen" class="game-screen"><span id="screen-kicker">A LITTLE LESS TALK.</span><h2 id="screen-title">Make your move.</h2><p id="screen-description">Clear the freight. Dash for a faster time.<br>One crash is all it takes.</p><button id="start" class="button primary">Launch run <span>↗</span></button><span class="screen-hint" id="screen-hint">SPACE TO START · NO DOWNLOADS</span></div>
               <div id="countdown" class="countdown" hidden></div>
@@ -42,7 +42,25 @@
         <aside class="board-column">
           <div class="section-label"><span>THE GAUNTLET</span><span class="live-label"><i></i> LIVE BOARD</span></div>
           <div class="challenge-card"><div class="challenge-number" id="challenge-number">ROUND 01</div><h2 id="challenge-title">The opening challenge</h2><div class="challenge-meta"><span id="challenge-distance">1,600m course</span><span id="attempts">0 attempts</span></div><div class="player-entry"><label for="player-name">YOUR PLAYER NAME <span>GUEST ENTRY</span></label><input id="player-name" maxlength="24" autocomplete="nickname" placeholder="Pick your racing name" value="" aria-describedby="identity-note"><small id="identity-note">Or type !join in Twitch chat for an attributed entry.</small></div><button id="join-race" class="button wide">Take the challenge <span>↗</span></button></div>
+          <div class="board-tabs" role="tablist" aria-label="Challenge board">
+            <button id="leaderboard-tab" role="tab" aria-selected="true" aria-controls="leaderboard-panel">Leaderboard <span>01</span></button>
+            <button id="community-tab" role="tab" aria-selected="false" aria-controls="community-panel" tabindex="-1">Community <span>02</span></button>
+          </div>
+          <section id="leaderboard-panel" role="tabpanel" aria-labelledby="leaderboard-tab">
           <div class="leaderboard"><div class="leaderboard-head"><h3>Talk is cheap.</h3><span>BEST RUN / PLAYER</span></div><div class="table-head"><span>RACER</span><span>RESULT</span></div><ol id="scores"></ol><div id="empty-board" class="empty-board"><span class="empty-track" aria-hidden="true">↗</span><strong>The board is yours to take.</strong><p>Finish the course to set the pace.<br>Crashes rank by distance reached.</p></div><div class="board-foot"><span class="verified-dot"></span> Scores verified by replaying every input.</div></div>
+          </section>
+          <section id="community-panel" class="community-panel" role="tabpanel" aria-labelledby="community-tab" hidden>
+            <span class="eyebrow">DREAM MATCHUPS / EXAMPLES</span>
+            <h3>Who would you<br>throw this to?</h3>
+            <p>A familiar tag. The same brutal jump. Imagine your favorite community taking a shot.</p>
+            <div class="community-tags">
+              <a href="https://www.twitch.tv/shroud" target="_blank" rel="noopener noreferrer"><span class="tag-avatar" aria-hidden="true">SH</span><span><strong>@shroud</strong><small>EXAMPLE CREATOR</small></span><span aria-hidden="true">↗</span></a>
+              <a href="https://www.twitch.tv/pokimane" target="_blank" rel="noopener noreferrer"><span class="tag-avatar" aria-hidden="true">PO</span><span><strong>@pokimane</strong><small>EXAMPLE CREATOR</small></span><span aria-hidden="true">↗</span></a>
+              <a href="https://www.twitch.tv/tarik" target="_blank" rel="noopener noreferrer"><span class="tag-avatar" aria-hidden="true">TA</span><span><strong>@tarik</strong><small>EXAMPLE CREATOR</small></span><span aria-hidden="true">↗</span></a>
+            </div>
+            <small class="community-note">Illustrative tags only. These creators have not joined or endorsed this challenge.</small>
+            <div class="community-invite"><strong>Your chat gets the real invitation.</strong><p>Copy the challenge link below, or type <code>!challenge</code> in your connected channel.</p></div>
+          </section>
           <div class="share-card"><span class="eyebrow">THROW DOWN THE CHALLENGE</span><p>One link. Everybody gets a shot.</p><button id="copy-link" class="button wide outline">Copy viewer link <span>↗</span></button><button id="copy-overlay" class="text-button">Copy OBS overlay URL ↗</button><small id="share-note">Local links work on this computer. Set a public URL to invite remote viewers.</small></div>
         </aside>
       </section>

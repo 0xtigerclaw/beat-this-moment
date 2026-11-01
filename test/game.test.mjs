@@ -1,20 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { initial, world, step, replay, compareRuns, FLOOR, PLAYER } from '../public/engine.js';
-
-export function play(snapshot = initial(), dash = false, finish = world(snapshot.seed).finish) {
-  let s = { ...snapshot }; const map = world(s.seed), inputs = [], states = [{ ...s }];
-  while (s.status === 'running' && inputs.length < 3000) {
-    const next = map.obstacles.find(o => o.x + o.w > s.x);
-    const jump = next && next.x - s.x < (dash && s.energy > 2 ? 90 : 65) && s.y === FLOOR - PLAYER.h && !s.jumpHeld;
-    const input = (jump ? 1 : 0) | (dash ? 2 : 0);
-    inputs.push(input); s = step(s, input, map, finish); states.push({ ...s });
-  }
-  return { inputs, states, state: s };
-}
+import { play } from './support/solver.mjs';
 
 test('the same seed produces the same course', () => {
   assert.deepEqual(world(41), world(41)); assert.notDeepEqual(world(41), world(42));
+});
+test('hard courses add tall walls, wide barriers and double stacks and remain completable', () => {
+  const hard = world(41), classic = world(41, 1);
+  assert.ok(hard.obstacles.length > classic.obstacles.length);
+  assert.ok(hard.obstacles.some(o => o.h >= 62));
+  assert.ok(hard.obstacles.some(o => o.w >= 64));
+  assert.ok(hard.obstacles.some((o,i) => i && o.x - hard.obstacles[i-1].x < 55));
+  for (const seed of [1, 17, 41, 42, 99, 4294967295]) {
+    for (const dash of [false, true]) {
+      const run = play(initial(seed), dash);
+      assert.ok(replay(initial(seed), run.inputs).completed);
+    }
+  }
+});
+test('version-one snapshots retain their original course and recorded result', () => {
+  assert.deepEqual(world(41, 1).obstacles[0], {x:360,w:30,h:49});
+  const result = replay(initial(41, 1), Array(59).fill(0));
+  assert.equal(result.completed, false);
+  assert.equal(result.ticks, 59);
+  assert.ok(Math.abs(result.distance - 247.8) < 0.000001);
+  const completed = play(initial(41, 1), true);
+  assert.deepEqual(replay(initial(41, 1), completed.inputs).state, completed.state);
 });
 test('jump and dash can finish the course, and replay is exact', () => {
   for (const dash of [false, true]) {

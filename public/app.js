@@ -9,7 +9,7 @@ document.body.classList.toggle('overlay-mode', overlayMode);
 document.body.classList.toggle('broadcast-mode', broadcastMode);
 if (overlayMode) $('overlay').hidden = false;
 let info, challenge, isHost = false, mode = viewerId ? 'challenge' : 'practice';
-let sim = initial(), map = world(sim.seed), finish = map.finish, startState = { ...sim };
+let sim = initial(), map = world(sim.seed, sim.version), finish = map.finish, startState = { ...sim };
 let running = false, starting = false, raceTicket, inputs = [], history = [], savedMoment = null;
 let keys = { jump: false, dash: false }, ghost = null, ghostName = '', replayOnly = false, replayFrame = 0;
 let attempts = 0, toastTimer, connectionLost = false, refreshSequence = 0, playerSession;
@@ -36,10 +36,13 @@ function setMode(next) {
   if (running || starting) return toast('Finish this run before switching.');
   mode = next; replayOnly = false;
   $('game-mode').textContent = mode === 'practice' ? 'PRACTICE' : 'CHALLENGE';
+  const hard = mode === 'practice' || challenge.snapshot.version >= 2;
+  $('difficulty').textContent = hard ? 'HARD / NIGHT SHIFT' : 'CLASSIC / V1';
+  $('course-subtitle').textContent = hard ? 'Double stacks. Tight windows. No second chances.' : 'The original course. Make the jump.';
   $('round-label').textContent = mode === 'practice' ? 'PRACTICE / NO SCORE SUBMITTED' : 'SAME START / EVERY RACER';
   $('switch-mode').textContent = mode === 'practice' ? 'Race the active challenge ↗' : 'Back to practice ↗';
   sim = mode === 'practice' ? initial() : { ...challenge.snapshot };
-  startState = { ...sim }; map = world(sim.seed); finish = mode === 'practice' ? map.finish : challenge.finish;
+  startState = { ...sim }; map = world(sim.seed, sim.version); finish = mode === 'practice' ? map.finish : challenge.finish;
   screen(mode === 'practice' ? 'A LITTLE LESS TALK.' : 'EXACT SAME START.', mode === 'practice' ? 'Make your move.' : 'Your turn, chat.', mode === 'practice' ? 'Clear the freight. Dash for a faster time.' : `You have ${Math.round(finish - sim.x).toLocaleString()}m to prove it.`, 'Launch run', 'SPACE TO START · JUMP / DASH');
   updateHud();
 }
@@ -129,9 +132,9 @@ async function startRun() {
       $('player-name').value = data.name;
       $('identity-note').textContent = data.identity === 'twitch' ? `Playing as ${data.name} · Twitch chat entry` : 'Guest entry. Your name is not a verified Twitch identity.';
       challenge = data.challenge; sim = { ...challenge.snapshot }; finish = challenge.finish;
-    } else { sim = initial(); finish = world(sim.seed).finish; raceTicket = null; }
+    } else { sim = initial(); finish = world(sim.seed, sim.version).finish; raceTicket = null; }
     try { localStorage.setItem('btm-name', $('player-name').value); } catch {}
-    map = world(sim.seed); startState = { ...sim }; inputs = []; history = [{ ...sim }];
+    map = world(sim.seed, sim.version); startState = { ...sim }; inputs = []; history = [{ ...sim }];
     keys = { jump: false, dash: false }; savedMoment = null; $('publish').disabled = true;
     $('game-screen').hidden = true; $('countdown').hidden = false;
     for (const value of ['3','2','1']) { $('countdown').textContent = value; await new Promise(resolve => setTimeout(resolve, 450)); }
@@ -144,7 +147,7 @@ async function endRun() {
   running = false; keys = { jump: false, dash: false };
   const target = sim.frame - 100;
   savedMoment = [...history].reverse().find(s => s.frame <= target && s.y === FLOOR - PLAYER.h && s.status === 'running') || history[0];
-  if (world(savedMoment.seed).finish - savedMoment.x < 400) savedMoment = history[0];
+  if (world(savedMoment.seed, savedMoment.version).finish - savedMoment.x < 400) savedMoment = history[0];
   $('publish').disabled = !isHost;
   $('moment-title').textContent = sim.status === 'finished' ? 'A run worth chasing.' : 'Big talk. Small landing.';
   $('moment-description').textContent = `Challenge starts at ${Math.round(savedMoment.x)}m, ${formatTime(Math.max(0, sim.frame - savedMoment.frame) / 60)}s before this moment.`;
@@ -246,6 +249,25 @@ function loop(now) {
   if(running){accumulator+=dt;while(accumulator>=1000/60&&running){const input=(keys.jump?1:0)|(keys.dash?2:0);inputs.push(input);sim=step(sim,input,map,finish);if(sim.status==='running'){history.push({...sim});if(history.length>240)history.shift();}accumulator-=1000/60;if(sim.status!=='running')endRun();else if(inputs.length>=MAX_TICKS){running=false;toast('Run limit reached. Start again.');screen('TIME OUT','Fresh start?','This run exceeded the time limit.');}} updateHud();}
   if(replayOnly){accumulator+=dt;while(accumulator>=1000/60){replayFrame++;accumulator-=1000/60;if(replayFrame>=ghost.length){replayOnly=false;screen('GHOST REPLAY COMPLETE','Your move.',`That was ${ghostName}’s run. Now chase it.`);refresh(info);break;}}}
   if(!overlayMode&&(running||replayOnly||now-lastPaint>100)){draw();lastPaint=now;}requestAnimationFrame(loop);
+}
+
+const boardTabs = [...document.querySelectorAll('[role=tab]')];
+function selectBoardTab(tab) {
+  for (const button of boardTabs) {
+    const selected = button === tab;
+    button.setAttribute('aria-selected', String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    $(button.getAttribute('aria-controls')).hidden = !selected;
+  }
+}
+for (const [index, tab] of boardTabs.entries()) {
+  tab.addEventListener('click', () => selectBoardTab(tab));
+  tab.addEventListener('keydown', event => {
+    if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? boardTabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + boardTabs.length) % boardTabs.length;
+    selectBoardTab(boardTabs[next]); boardTabs[next].focus();
+  });
 }
 
 $('start').addEventListener('click',()=>startRun());

@@ -1,10 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from '../server.mjs';
 import { initial, step, replay } from '../public/engine.js';
+
+test('hard-course upgrade preserves classic challenge links and creates only one new round', async () => {
+  const dataDir=mkdtempSync(path.join(tmpdir(),'btm-upgrade-'));
+  const snapshot=initial(41,1),inputs=Array(59).fill(0),result=replay(snapshot,inputs,1690);
+  const run={id:'old-run',name:'Classic racer',playerId:'classic',identity:'guest',inputs,ticks:result.ticks,seconds:result.seconds,distance:result.distance,completed:false,jumps:0,createdAt:1};
+  writeFileSync(path.join(dataDir,'challenges.json'),JSON.stringify({activeId:'classic',challenges:[{id:'classic',title:'Classic',snapshot,finish:1690,createdAt:1,runs:[run]}]}));
+  let app=createApp({dataDir,port:0});
+  try {
+    await new Promise(r=>app.server.listen(0,'127.0.0.1',r));
+    let base=`http://127.0.0.1:${app.server.address().port}`;
+    const active=await(await fetch(base+'/api/state')).json();
+    assert.equal(active.challenge.snapshot.version,2);assert.equal(active.challenge.finish-snapshot.x,2200);
+    const classic=await(await fetch(base+'/api/challenges/classic')).json();
+    assert.equal(classic.attempts,1);assert.equal(classic.snapshot.version,1);
+    const ghost=await(await fetch(base+'/api/replays/classic/old-run')).json();
+    assert.deepEqual(ghost.trace,result.trace);
+    app.close();app=createApp({dataDir,port:0});
+    await new Promise(r=>app.server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${app.server.address().port}`;
+    const restored=await(await fetch(base+'/api/state')).json();
+    assert.equal(restored.challenge.id,active.challenge.id);assert.equal(restored.history.length,2);
+  } finally {app.close();rmSync(dataDir,{recursive:true,force:true});}
+});
 
 test('host permissions, independent viewer entry, verified score, replay and persistence', async () => {
   const dataDir=mkdtempSync(path.join(tmpdir(),'btm-'));
