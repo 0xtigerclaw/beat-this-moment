@@ -1,0 +1,13 @@
+{
+  "name": "beat-this-moment",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A Twitch-connected, replayable community speed challenge.",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/engine.js && node --check twitch.mjs"
+  },
+  "engines": { "node": ">=22.15" }
+}

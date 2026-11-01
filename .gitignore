@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.data/
+node_modules/
+output/
+.playwright-cli/
+.DS_Store
+# Local OBS recordings and intermediate demo assets.
+demo/edit/
+demo/*.mov
+demo/*.mp4
+!demo/beat-this-moment-draft.mp4
+demo/*-contact-sheet.jpg
+demo/*-preview.jpg
+demo/edit-manifest.json
+__pycache__/
