@@ -40,3 +40,57 @@ test('public hosting requires a host key even when tunnelling localhost', async(
   const {createApp}=await import('../server.mjs');
   assert.throws(()=>createApp({publicUrl:'https://example.com',hostKey:''}),/HOST_KEY/);
 });
+
+function chatHarness(){
+  const realFetch=globalThis.fetch, realSocket=globalThis.WebSocket, sockets=[], sent=[];
+  class Socket extends EventTarget {
+    constructor(url){super();this.url=url;sockets.push(this);}
+    close(){this.dispatchEvent(new Event('close'));}
+    message(type,payload,messageId){this.dispatchEvent(new MessageEvent('message',{data:JSON.stringify({metadata:{message_type:type,message_id:messageId},payload})}));}
+  }
+  globalThis.WebSocket=Socket;
+  globalThis.fetch=async(url,options={})=>{
+    if(String(url).includes('/oauth2/token'))return Response.json({access_token:'dummy-token',refresh_token:'dummy-refresh'});
+    if(String(url).includes('/validate'))return Response.json({client_id:'dummy-client',user_id:'123',login:'testchannel',scopes:['user:read:chat','user:write:chat']});
+    if(String(url).endsWith('chat/messages')){sent.push(JSON.parse(options.body));return Response.json({data:[{is_sent:true}]});}
+    return Response.json({data:[]});
+  };
+  const bridge=new TwitchBridge({clientId:'dummy-client',clientSecret:'dummy-secret',redirectUri:'http://localhost/auth/callback',onCommand:async(command,user)=>`${command} for ${user.name}`});
+  const say=async(text,user,id)=>{sockets[0].message('notification',{event:{chatter_user_id:user,chatter_user_name:user,message_id:`chat-${id}`,message:{text}}},`notice-${id}`);await new Promise(setImmediate);await new Promise(setImmediate);};
+  const start=async()=>{await bridge.authorize('dummy-code');sockets[0].message('session_welcome',{session:{id:'session-1',keepalive_timeout_seconds:20}});await new Promise(setImmediate);};
+  const restore=()=>{bridge.disconnect();globalThis.fetch=realFetch;globalThis.WebSocket=realSocket;};
+  return {bridge,sent,say,start,restore};
+}
+
+test('a whole chat typing !challenge gets one reply, and each !join still gets its own',async()=>{
+  const {sent,say,start,restore}=chatHarness();
+  try{
+    await start();
+    await say('!challenge','a',1);await say('!challenge','b',2);await say('!challenge','c',3);
+    assert.equal(sent.length,1);
+    await say('!join','d',4);await say('!join','e',5);
+    assert.deepEqual(sent.slice(1).map(m=>m.message),['!join for d','!join for e']);
+  }finally{restore();}
+});
+
+test('chat replies stop at the send budget instead of flooding Twitch',async()=>{
+  const {sent,say,start,restore}=chatHarness();
+  try{
+    await start();
+    for(let n=0;n<40;n++)await say('!join',`viewer-${n}`,n);
+    assert.equal(sent.length,15);
+  }finally{restore();}
+});
+
+test('announcements post without a reply target, and only while connected',async()=>{
+  const {bridge,sent,start,restore}=chatHarness();
+  try{
+    assert.equal(await bridge.announce('too early'),false);
+    await start();
+    assert.equal(await bridge.announce('New leader'),true);
+    assert.equal(sent.length,1);assert.equal(sent[0].message,'New leader');assert.equal('reply_parent_message_id' in sent[0],false);
+    const realFetch=globalThis.fetch;globalThis.fetch=async()=>{throw new Error('network blip');};
+    assert.equal(await bridge.announce('still fine'),false);
+    globalThis.fetch=realFetch;
+  }finally{restore();}
+});

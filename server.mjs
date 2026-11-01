@@ -6,6 +6,7 @@ import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { VERSION, initial, replay, validSnapshot, compareRuns, world, PLAYER, FLOOR } from './public/engine.js';
 import { TwitchBridge } from './twitch.mjs';
+import { isBlockedName } from './moderation.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const id = () => randomBytes(18).toString('base64url');
@@ -24,6 +25,8 @@ export function createApp(options = {}) {
   const clientSecret = options.clientSecret ?? process.env.TWITCH_CLIENT_SECRET ?? '';
   const ownerChannel = (options.ownerChannel ?? process.env.TWITCH_OWNER_CHANNEL ?? '').trim().toLowerCase();
   if(ownerChannel && !/^[a-z0-9_]{1,25}$/.test(ownerChannel)) throw new Error('TWITCH_OWNER_CHANNEL must be a Twitch login name.');
+  const blockedNames = options.blockedNames ?? (process.env.BLOCKED_NAMES || '').split(',').map(x => x.trim()).filter(Boolean);
+  const leadAnnounceGap = options.leadAnnounceGap ?? 30000;
   const trustProxy = options.trustProxy ?? ['1', 'true'].includes(process.env.TRUST_PROXY);
   mkdirSync(dataDir, { recursive: true });
   const file = path.join(dataDir, 'challenges.json');
@@ -56,6 +59,21 @@ export function createApp(options = {}) {
     const token = id(); joins.set(token, { ...user, challengeId: c.id, expires: Date.now() + 10 * 60 * 1000 });
     return `@${user.name} your challenge entry: ${publicUrl}/c/${c.id}?join=${token} (single-use link, expires in 10 minutes)`;
   } });
+  // Guest names can contain dots, so strip them to stop the bot posting a name that reads as a link.
+  const chatName = run => run.identity === 'twitch' ? `@${run.name}` : run.name.replace(/\./g, '');
+  let announcedLeader = null, lastLeadAt = -Infinity, leadTimer = null;
+  const announceLeader = () => {
+    const c = find(db.activeId), top = board(c)[0];
+    if (!top?.completed || top.id === announcedLeader) return;
+    const wait = lastLeadAt + leadAnnounceGap - Date.now();
+    if (wait > 0) {
+      // A busy round can change leader many times, so post only the latest once the gap has passed.
+      if (!leadTimer) { leadTimer = setTimeout(() => { leadTimer = null; announceLeader(); }, wait); leadTimer.unref(); }
+      return;
+    }
+    announcedLeader = top.id; lastLeadAt = Date.now();
+    twitch.announce(`New leader on "${c.title}": ${chatName(top)} at ${top.seconds.toFixed(2)}s. Beat it: ${publicUrl}/c/${c.id}`);
+  };
   const cookies = req => Object.fromEntries((req.headers.cookie || '').split(';').map(x => x.trim().split('=')));
   const clientAddress = req => {
     const forwarded = trustProxy ? String(req.headers['x-forwarded-for'] || '').split(',').pop().trim() : '';
@@ -102,7 +120,9 @@ export function createApp(options = {}) {
         requireHost(req); const { snapshot, title } = await readBody(req);
         if (!validSnapshot(snapshot) || world(snapshot.seed, snapshot.version).finish - snapshot.x < 400) throw fail('Choose a running moment with at least 400m left.');
         if (world(snapshot.seed, snapshot.version).obstacles.some(o => snapshot.x + PLAYER.w > o.x && snapshot.x < o.x + o.w && snapshot.y + PLAYER.h > FLOOR - o.h)) throw fail('This moment starts inside an obstacle. Choose an earlier checkpoint.');
-        const c = newChallenge(snapshot, String(title || 'Beat this moment').trim().slice(0, 60) || 'Beat this moment'); broadcast(); return json(res, challengeView(c), 201);
+        const c = newChallenge(snapshot, String(title || 'Beat this moment').trim().slice(0, 60) || 'Beat this moment'); broadcast();
+        twitch.announce(`New challenge: "${c.title}". Everyone gets the exact same start. Can you beat it? ${publicUrl}/c/${c.id}`);
+        return json(res, challengeView(c), 201);
       }
       if (req.method === 'POST' && url.pathname === '/api/challenges/active') {
         requireHost(req); const { id: cid } = await readBody(req); if (!find(cid)) throw fail('Challenge not found.', 404);
@@ -124,6 +144,7 @@ export function createApp(options = {}) {
           playerSession = id(); playerSessions.set(playerSession, { id: join.id, name: join.name, expires: Date.now() + 3600000 });
         }
         if (!name) throw fail('Enter a player name.');
+        if (identity === 'guest' && isBlockedName(name, blockedNames)) throw fail('Pick a different player name.');
         const ticket = id(); runTickets.set(ticket, { challengeId: c.id, identity, playerId, name, at: Date.now() });
         return json(res, { ticket, name, identity, playerSession: identity === 'twitch' ? playerSession : undefined, challenge: challengeView(c) }, 201);
       }
@@ -135,8 +156,18 @@ export function createApp(options = {}) {
         if (result.seconds * 1000 > Date.now() - ticket.at + 2000) throw fail('Run was submitted faster than real time.');
         const run = { id: id(), name: ticket.name, identity: ticket.identity, playerId: ticket.playerId, ticks: result.ticks, seconds: result.seconds, distance: result.distance, completed: result.completed, jumps: result.jumps, createdAt: Date.now(), inputs: body.inputs };
         if (c.runs.length >= 5000) throw fail('This challenge is full. Ask the host for a new round.');
+        const leaderBefore = board(c)[0]?.id;
         runTickets.delete(body.ticket); c.runs.push(run); persist(); broadcast();
+        if (c.id === db.activeId && board(c)[0]?.id !== leaderBefore) announceLeader();
         return json(res, { run: { ...run, inputs: undefined }, leaderboard: board(c) }, 201);
+      }
+      if (req.method === 'POST' && url.pathname === '/api/runs/remove') {
+        requireHost(req); const { challengeId, runId } = await readBody(req);
+        const c = find(challengeId), run = c?.runs.find(r => r.id === runId);
+        if (!run) throw fail('Run not found.', 404);
+        // Remove every run by this player. Otherwise their next best run takes its place on the board.
+        c.runs = c.runs.filter(r => !(r.identity === run.identity && r.playerId === run.playerId));
+        persist(); broadcast(); return json(res, { ok: true, leaderboard: board(c) });
       }
       if (req.method === 'GET' && /^\/api\/replays\/[\w-]+\/[\w-]+$/.test(url.pathname)) {
         const [, , , cid, rid] = url.pathname.split('/');
@@ -162,6 +193,9 @@ export function createApp(options = {}) {
         res.writeHead(302, { Location: '/?connected=1', 'Set-Cookie': [`btm_host=${session}; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800${publicUrl.startsWith('https:') ? '; Secure' : ''}`, `btm_oauth=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${publicUrl.startsWith('https:') ? '; Secure' : ''}`] }); return res.end();
       }
       if (req.method === 'POST' && url.pathname === '/api/twitch/disconnect') { requireHost(req); twitch.disconnect(); return json(res, { ok: true }); }
+      if (req.method === 'GET' && url.pathname === '/play') {
+        res.writeHead(302, { Location: `/c/${db.activeId}`, 'Cache-Control': 'no-store' }); return res.end();
+      }
       if (req.method === 'GET') {
         const page = url.pathname === '/' || url.pathname === '/overlay' || /^\/c\/[\w-]+$/.test(url.pathname);
         const filename = page ? 'index.html' : url.pathname.slice(1);
@@ -178,9 +212,9 @@ export function createApp(options = {}) {
     for (const collection of [joins, playerSessions, oauthStates]) for (const [k,v] of collection) if (v.expires < now) collection.delete(k);
     for (const [k,v] of rates) if (v.at < now - 60000) rates.delete(k);
   }, 60000); cleanup.unref();
-  const close = () => { clearInterval(cleanup); twitch.disconnect({ forget: false }); for (const res of clients) res.end(); server.close(); };
+  const close = () => { clearInterval(cleanup); clearTimeout(leadTimer); twitch.disconnect({ forget: false }); for (const res of clients) res.end(); server.close(); };
   const ready = twitch.restore(ownerChannel).catch(() => twitch.update({ connected: false, connecting: false, error: 'Saved Twitch session could not be restored. Connect Twitch again.' }));
-  return { server, close, ready };
+  return { server, close, ready, twitch };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

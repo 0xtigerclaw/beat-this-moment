@@ -10,7 +10,7 @@ The idea is to give Twitch communities another way to participate in the moment 
 
 ![The playable challenge and community leaderboard](docs/images/challenge.png)
 
-**[Play the hosted game](https://beat-the-moment-35-211-225-40.sslip.io)** · [GCP deployment](deploy/GCP.md)
+**[Play the live challenge](https://beat-the-moment-35-211-225-40.sslip.io/play)** · [GCP deployment](deploy/GCP.md)
 
 [Watch the narrated prototype draft](demo/beat-this-moment-draft.mp4) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](QA.md)
 
@@ -53,15 +53,15 @@ flowchart LR
 
 ## Gameplay gallery
 
-**The hard course, captured directly from the running game.** The current round, Night Shift, is a 2,200m course with 13 hazards: tall walls, wide barriers, and double stacks with tight jump windows. The original 1,600m, six-hazard course is kept as course version 1, so earlier challenge links and ghost replays still play exactly as recorded. This is the start of the assisted demo run's ghost replay.
+**The hard course, captured directly from the running game.** The current round, Night Shift, is a 2,200m course with 12 hazards: a small opening crate to teach the jump, then tall walls, wide barriers, and double stacks with tight jump windows. The original 1,600m, six-hazard course is kept as course version 1, so earlier challenge links and ghost replays still play exactly as recorded.
 
 ![The Neon Freight hard course with the leading ghost](docs/images/gameplay.png)
 
-**A winning run to chase.** The ghost replay follows the recorded inputs through the final double stack toward the finish. The assisted demo run, an input search over the real simulation and labeled as such on the board, completed the course in 7.48 seconds with ten jumps.
+**A winning run to chase.** The ghost replay follows the recorded inputs through the final hazards toward the finish.
 
 ![The winning ghost approaching the finish line](docs/images/ghost-replay.png)
 
-**The community board.** Completed runs rank above crashes; each entry can be replayed.
+**The community board.** Completed runs rank above crashes; each entry can be replayed. These screenshots come from a local test server, with sample runs that are labeled as such: an input search over the real simulation and a deliberate crash. The hosted board holds only real attempts.
 
 ![Challenge entry and server-verified community leaderboard](docs/images/leaderboard.png)
 
@@ -138,9 +138,13 @@ The game works without Twitch. To demonstrate the live integration:
    - `!challenge`: replies with the active challenge link.
    - `!join`: replies with a single-use, ten-minute entry link attributed to the chatter. Subsequent retries in the same page retain that identity for one hour.
 
+The bot also posts on its own when you publish a challenge and when a finished run takes the lead on the active challenge. Lead announcements are spaced at least 30 seconds apart and name the latest leader. To keep a busy chat readable, `!challenge` replies at most once every 15 seconds, since everyone can see the link, and all bot messages share a budget of 15 every 30 seconds.
+
 The integration uses a broadcaster user access token with `user:read:chat user:write:chat`, an EventSub WebSocket subscription to `channel.chat.message`, and the Send Chat Message API. Tokens are validated at connection and every 55 minutes and refreshed when needed. By default they stay in memory and are discarded on restart. Set `TWITCH_TOKEN_FILE` and `TWITCH_OWNER_CHANNEL` to save them in a private file and restore the owning broadcaster after restart. The file must be outside the public directory; it is written with mode 0600, and disconnecting Twitch deletes it. Browser host sessions still require sign-in after a restart. EventSub reconnects after interruptions; missed Twitch events are not replayed. Chat replies have a per-user ten-second cooldown and are deduplicated.
 
 Set `TWITCH_OWNER_CHANNEL` to your owning Twitch login. With this set, the owner can sign in directly with Twitch, without copying the host key into the browser. The callback checks a short-lived HttpOnly OAuth nonce cookie and a single-use state, validates the token and scopes with Twitch, and checks the exact owner login before granting a host session. Other Twitch accounts cannot take over the broadcaster connection or host desk. Leave this setting empty to require an existing host session before starting Twitch authorization.
+
+**Moderation:** guest names pass a basic filter for common slurs, and `BLOCKED_NAMES` adds your own comma-separated terms. The filter will miss things, so the host desk shows a remove button beside each board entry. It removes all of that player's runs from that challenge. Twitch names are not filtered.
 
 **Identity limitation:** `!join` links are bearer links visible in chat. Someone who copies another person's unused link can claim it. The label means “Twitch chat entry,” not independently authenticated browser ownership. Guests have no verified identity. A public competitive release should use viewer OAuth and account-bound sessions.
 
@@ -166,7 +170,7 @@ npm test
 npm run check
 ```
 
-Tests cover deterministic courses, the harder course version and its upgrade path, completable jump/dash mechanics, restoration from mid-jump snapshots, replay equivalence, malformed/incomplete run rejection, ranking, host authorization, cross-origin rejection, independent guest entry, duplicate submission prevention and persistence across restarts.
+Tests cover deterministic courses, the harder course version and its upgrade path, completable jump/dash mechanics, restoration from mid-jump snapshots, replay equivalence, malformed/incomplete run rejection, ranking, host authorization, cross-origin rejection, independent guest entry, duplicate submission prevention, persistence across restarts, chat announcements and cooldowns, name filtering, and host removal.
 
 Server-side replay prevents fabricated scores but **does not prevent bots, tool-assisted inputs, name impersonation, or determined cheating**. There is no prize/payment system. Twitch OAuth and live chat require your own app credentials and broadcaster authorization, and must be tested with an actual Twitch channel before a hackathon submission.
 

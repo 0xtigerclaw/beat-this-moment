@@ -52,7 +52,7 @@ sudo journalctl -u beat-this-moment -n 50 --no-pager
 curl -fsS http://127.0.0.1:3000/healthz
 ```
 
-`gcp-startup.sh` bootstraps a fresh Debian 12 VM. `gcp-install.sh` installs an application archive and private environment file. The latter expects a hostname, a runtime tar path, and a private configuration path. Do not include credentials in instance metadata, startup scripts, source archives, or the repository. Review an update before installing it; preserve the existing state directory.
+`gcp-startup.sh` bootstraps a fresh Debian 12 VM. `gcp-install.sh` installs an application archive and private environment file. The latter expects a hostname, a runtime tar path, and a private configuration path. Do not include credentials in instance metadata, startup scripts, source archives, or the repository. Review an update before installing it; preserve the existing state directory. The runtime archive must contain `package.json`, `server.mjs`, `twitch.mjs`, `moderation.mjs`, and `public/`.
 
 ## Stop and remove
 

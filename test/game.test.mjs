@@ -39,7 +39,7 @@ test('a snapshot taken mid-jump reproduces every later state', () => {
   assert.ok(index > 0);
   const result = replay(full.states[index], full.inputs.slice(index));
   assert.deepEqual(result.state, full.state);
-  assert.deepEqual(result.trace[0], { x: full.states[index].x, y: full.states[index].y });
+  assert.deepEqual(result.trace[0], { x: full.states[index].x, y: full.states[index].y, energy: full.states[index].energy });
 });
 test('crashes are terminal; invalid inputs and incomplete runs are rejected', () => {
   let s = initial(); const inputs=[]; while(s.status==='running'){inputs.push(0);s=step(s,0);}
@@ -55,4 +55,19 @@ test('finishers outrank crashes; faster runs win; crashes rank by distance', () 
   assert.ok(compareRuns(finish, crash)<0);
   assert.ok(compareRuns({...finish,ticks:390},finish)<0);
   assert.ok(compareRuns({...crash,distance:1000},crash)<0);
+});
+test('the hard course opens with its easiest hazard and keeps early walls smaller', () => {
+  const { obstacles } = world(41);
+  assert.deepEqual(obstacles[0], { x: 340, w: 28, h: 30 });
+  for (const o of obstacles.filter(o => o.x < 1000)) assert.ok(o.h <= 62, `hazard at ${o.x} is ${o.h} tall`);
+  assert.ok(obstacles.some(o => o.h > 62), 'full-size walls still appear later');
+});
+test('hazards past the finish cannot end a run, except on version-one replays', () => {
+  const hidden = { seed: 41, finish: 3600, obstacles: [{ x: 1020, w: 25, h: 30 }] };
+  const nearFinish = version => ({ ...initial(41, version), x: 996 });
+  assert.equal(step(nearFinish(2), 0, hidden, 1010).status, 'running');
+  assert.equal(step(nearFinish(1), 0, hidden, 1010).status, 'crashed');
+  assert.equal(step(nearFinish(2), 0, hidden, 1100).status, 'crashed');
+  const crossing = { ...nearFinish(2), x: 1006 };
+  assert.equal(step(crossing, 0, hidden, 1010).status, 'finished');
 });

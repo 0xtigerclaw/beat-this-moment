@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createApp } from '../server.mjs';
 import { initial, step, replay } from '../public/engine.js';
+import { play } from './support/solver.mjs';
 
 test('hard-course upgrade preserves classic challenge links and creates only one new round', async () => {
   const dataDir=mkdtempSync(path.join(tmpdir(),'btm-upgrade-'));
@@ -174,4 +175,82 @@ test('TRUST_PROXY in the environment turns proxy trust on only for 1 or true',as
     assert.equal(await limited('0'),true);
     assert.equal(await limited(''),true);
   }finally{if(saved===undefined)delete process.env.TRUST_PROXY;else process.env.TRUST_PROXY=saved;}
+});
+
+async function moderationApp(options={}){
+  const dataDir=mkdtempSync(path.join(tmpdir(),'btm-p1-'));
+  const app=createApp({port:0,dataDir,hostKey:'test-host-key',...options});
+  await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
+  const base=`http://127.0.0.1:${app.server.address().port}`;
+  const announced=[];app.twitch.announce=async message=>{announced.push(message);return true;};
+  const post=async(route,data,cookie)=>{const r=await fetch(base+route,{method:'POST',headers:{'Content-Type':'application/json',...(cookie?{cookie}:{})},body:JSON.stringify(data)});return {status:r.status,body:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};};
+  const {cookie}=await post('/api/host-session',{key:'test-host-key'});
+  const {challenge}=await(await fetch(base+'/api/state')).json();
+  // A short final stretch keeps runs inside the server's real-time check without slow test waits.
+  const {body:c}=await post('/api/challenges',{snapshot:{...initial(),x:3100},title:'Short'},cookie);
+  const stop=()=>{app.close();rmSync(dataDir,{recursive:true,force:true});};
+  return {app,base,post,cookie,c,challenge,announced,stop};
+}
+
+test('/play sends viewers to the active challenge',async()=>{
+  const {base,c,stop}=await moderationApp();
+  try{
+    const r=await fetch(base+'/play',{redirect:'manual'});
+    assert.equal(r.status,302);assert.equal(r.headers.get('location'),`/c/${c.id}`);
+  }finally{stop();}
+});
+
+test('guest names are filtered, including letter swaps and added terms, but ordinary names pass',async()=>{
+  const {post,c,stop}=await moderationApp({blockedNames:['spoiler']});
+  try{
+    for(const name of ['r3tard_99','K.I.K.E','fag','Spoiler Alert'])assert.equal((await post('/api/runs/start',{challengeId:c.id,name})).status,400,name);
+    for(const name of ['Fagan','Spice Girl','Raccoon','Grape Ape','Guest-636'])assert.equal((await post('/api/runs/start',{challengeId:c.id,name})).status,201,name);
+  }finally{stop();}
+});
+
+test('publishing announces in chat, and hosts can remove a player from the board',async()=>{
+  const {base,post,cookie,c,announced,stop}=await moderationApp();
+  try{
+    assert.equal(announced.length,1);assert.match(announced[0],/New challenge: "Short"/);assert.ok(announced[0].includes(`/c/${c.id}`));
+    const submit=async name=>{
+      const {body:{ticket}}=await post('/api/runs/start',{challengeId:c.id,name});
+      let s={...c.snapshot};const inputs=[];while(s.status==='running'){inputs.push(0);s=step(s,0,undefined,c.finish);}
+      await new Promise(r=>setTimeout(r,0));
+      return post('/api/runs',{ticket,inputs});
+    };
+    const first=await submit('Bad Name');await submit('Bad Name');const other=await submit('Viewer');
+    assert.equal(first.status,201);assert.equal(other.status,201);
+    assert.equal((await post('/api/runs/remove',{challengeId:c.id,runId:first.body.run.id})).status,401);
+    const removed=await post('/api/runs/remove',{challengeId:c.id,runId:first.body.run.id},cookie);
+    assert.equal(removed.status,200);assert.deepEqual(removed.body.leaderboard.map(r=>r.name),['Viewer']);
+    const state=await(await fetch(base+`/api/challenges/${c.id}`)).json();assert.equal(state.attempts,1);
+    assert.equal((await post('/api/runs/remove',{challengeId:c.id,runId:first.body.run.id},cookie)).status,404);
+  }finally{stop();}
+});
+
+test('a new finished leader is announced, throttled to the latest, and crashes stay quiet',async()=>{
+  const {post,c,announced,stop}=await moderationApp({leadAnnounceGap:150});
+  const submit=async(name,inputs)=>{
+    const {body:{ticket}}=await post('/api/runs/start',{challengeId:c.id,name});
+    await new Promise(r=>setTimeout(r,30));
+    const result=await post('/api/runs',{ticket,inputs});assert.equal(result.status,201);
+    return result.body.run;
+  };
+  try{
+    announced.length=0;
+    let s={...c.snapshot};const crash=[];while(s.status==='running'){crash.push(0);s=step(s,0,undefined,c.finish);}
+    assert.equal(s.status,'crashed');
+    await submit('Crasher',crash);
+    assert.equal(announced.length,0);
+    const slow=play(c.snapshot,false,c.finish).inputs,fast=play(c.snapshot,true,c.finish).inputs;
+    assert.ok(fast.length<slow.length);
+    await submit('Steady',slow);
+    assert.equal(announced.length,1);assert.match(announced[0],/New leader on "Short": Steady at /);
+    await submit('Steady Two',slow);
+    assert.equal(announced.length,1,'an equal time does not take the lead');
+    await submit('Evil.com',fast);
+    assert.equal(announced.length,1,'a second leader waits for the gap');
+    await new Promise(r=>setTimeout(r,220));
+    assert.equal(announced.length,2);assert.match(announced[1],/: Evilcom at /);assert.ok(!announced[1].includes('Evil.com'));
+  }finally{stop();}
 });

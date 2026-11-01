@@ -5,6 +5,8 @@ import path from 'node:path';
 const CHECK_INTERVAL = 55 * 60 * 1000;
 const RETRY_DELAYS = [30, 60, 120, 300].map(seconds => seconds * 1000);
 const RETRYING = 'Twitch is not answering right now. Retrying…';
+// Keeps the bot well inside Twitch's chat limits when a whole chat fires commands at once.
+const SEND_WINDOW = 30 * 1000, SEND_LIMIT = 15, CHALLENGE_COOLDOWN = 15 * 1000;
 const retryDelay = failures => RETRY_DELAYS[Math.min(failures, RETRY_DELAYS.length - 1)];
 
 export class TwitchBridge {
@@ -13,6 +15,8 @@ export class TwitchBridge {
     this.state = { connected: false, connecting: false, channel: null, error: null };
     this.seen = new Set();
     this.lastReplies = new Map();
+    this.sendTimes = [];
+    this.lastChallengeReply = 0;
     this.session = 0;
   }
   update(patch) { Object.assign(this.state, patch); this.onChange?.(); }
@@ -113,6 +117,23 @@ export class TwitchBridge {
       if (this.tokens === fresh) this.user = user;
     }
   }
+  canSend() {
+    const now = Date.now();
+    this.sendTimes = this.sendTimes.filter(at => now - at < SEND_WINDOW);
+    if (this.sendTimes.length >= SEND_LIMIT) return false;
+    this.sendTimes.push(now);
+    return true;
+  }
+  async sendChat(message, replyTo) {
+    const result = await this.api('chat/messages', { broadcaster_id: this.user.user_id, sender_id: this.user.user_id, ...(replyTo ? { reply_parent_message_id: replyTo } : {}), message: message.slice(0, 480) });
+    if (result.data?.[0]?.is_sent === false) this.update({ error: 'Twitch blocked a chat reply. Check AutoMod and link permissions.' });
+  }
+  // Posts to chat unprompted. A failed announcement must never break the action that caused it.
+  async announce(message) {
+    if (!this.state.connected || !this.user || !this.canSend()) return false;
+    try { await this.sendChat(message); return true; }
+    catch (error) { this.update({ error: error.message }); return false; }
+  }
   async api(path, body) {
     const send = () => fetch(`https://api.twitch.tv/helix/${path}`, { method: 'POST', headers: { 'Client-Id': this.clientId, Authorization: `Bearer ${this.tokens.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) });
     let r = await send();
@@ -156,11 +177,12 @@ export class TwitchBridge {
           if (Date.now() - last < 10000) return;
           this.lastReplies.set(e.chatter_user_id, Date.now());
           if (this.lastReplies.size > 2000) this.lastReplies.delete(this.lastReplies.keys().next().value);
+          // Everyone sees a !challenge reply, so one link is enough for the whole chat.
+          if (command === '!challenge' && Date.now() - this.lastChallengeReply < CHALLENGE_COOLDOWN) return;
+          if (!this.canSend()) return;
+          if (command === '!challenge') this.lastChallengeReply = Date.now();
           const message = await this.onCommand(command, { id: e.chatter_user_id, name: e.chatter_user_name });
-          if (message) {
-            const result = await this.api('chat/messages', { broadcaster_id: this.user.user_id, sender_id: this.user.user_id, reply_parent_message_id: e.message_id, message: message.slice(0, 480) });
-            if (result.data?.[0]?.is_sent === false) this.update({ error: 'Twitch blocked a chat reply. Check AutoMod and link permissions.' });
-          }
+          if (message) await this.sendChat(message, e.message_id);
         }
       } catch (error) { this.update({ error: error.message }); }
     });

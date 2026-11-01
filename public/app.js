@@ -11,7 +11,8 @@ if (overlayMode) $('overlay').hidden = false;
 let info, challenge, isHost = false, mode = viewerId ? 'challenge' : 'practice';
 let sim = initial(), map = world(sim.seed, sim.version), finish = map.finish, startState = { ...sim };
 let running = false, starting = false, raceTicket, inputs = [], history = [], savedMoment = null;
-let keys = { jump: false, dash: false }, ghost = null, ghostName = '', replayOnly = false, replayFrame = 0;
+let keys = { jump: false, dash: false }, ghost = null, ghostName = '', ghostRunId = null;
+let replayOnly = false, replayFrame = 0, replayTrace = null, replayName = '';
 let attempts = 0, toastTimer, connectionLost = false, refreshSequence = 0, playerSession;
 let joinToken = new URLSearchParams(location.search).get('join');
 let currentRunName = '';
@@ -47,9 +48,31 @@ function setMode(next) {
   updateHud();
 }
 function updateHud() {
-  $('time').replaceChildren(document.createTextNode(formatTime((sim.frame - startState.frame) / 60)), text('span', 's'));
-  $('distance').replaceChildren(document.createTextNode(String(Math.max(0, Math.round(sim.x - startState.x))).padStart(4, '0')), text('span', 'm'));
-  $('energy-value').textContent = `${Math.round(sim.energy)}%`; $('energy-fill').style.width = `${sim.energy}%`;
+  const frame = replayOnly && replayTrace ? Math.min(replayFrame, replayTrace.length - 1) : null;
+  const seconds = frame === null ? (sim.frame - startState.frame) / 60 : frame / 60;
+  const distance = frame === null ? sim.x - startState.x : replayTrace[frame].x - replayTrace[0].x;
+  const energy = frame === null ? sim.energy : replayTrace[frame].energy;
+  $('time').replaceChildren(document.createTextNode(formatTime(seconds)), text('span', 's'));
+  $('distance').replaceChildren(document.createTextNode(String(Math.max(0, Math.round(distance))).padStart(4, '0')), text('span', 'm'));
+  $('energy-value').textContent = `${Math.round(energy)}%`; $('energy-fill').style.width = `${energy}%`;
+}
+// Phones stack the game above the entry form, so a run could otherwise start off-screen.
+function showGame() {
+  const arena = document.querySelector('.arena'), controls = document.querySelector('.touch-controls');
+  const top = arena.getBoundingClientRect().top;
+  const bottom = (controls.offsetParent ? controls : arena).getBoundingClientRect().bottom;
+  if (top >= 0 && bottom <= window.innerHeight) return;
+  arena.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
+function runResult(run) { return run.completed ? `${formatTime(run.seconds)}s` : `${Math.floor(run.distance)}m`; }
+function showGhostLabel() {
+  const top = challenge?.leaderboard[0];
+  $('ghost-label').textContent = !top ? 'Ghost replay available after the first submitted run'
+    : ghostRunId === top.id ? `Ghost to beat: ${ghostName} · ${runResult(top)}` : 'Ghost unavailable. Scores are still saved.';
+}
+function endReplay() {
+  replayOnly = false; replayTrace = null; replayName = '';
+  setMode('challenge'); showGhostLabel();
 }
 function renderScores(c) {
   const list = $('scores'); list.replaceChildren();
@@ -61,7 +84,13 @@ function renderScores(c) {
     const result = text('span', run.completed ? `${formatTime(run.seconds)}s` : `${Math.floor(run.distance)}m`, 'result'); result.append(text('small', run.completed ? `${run.jumps} JUMPS · FINISHED` : 'CRASHED'));
     const watch = text('button', '▷', 'replay-button'); watch.setAttribute('aria-label', `Watch ${run.name}'s replay`);
     watch.addEventListener('click', () => watchReplay(c.id, run.id).catch(e => toast(e.message)));
-    row.append(racer, result, watch); list.append(row);
+    row.append(racer, result, watch);
+    if (isHost) {
+      const remove = text('button', '×', 'replay-button remove-button'); remove.setAttribute('aria-label', `Remove ${run.name} from the board`);
+      remove.addEventListener('click', () => removeRun(c.id, run).catch(e => toast(e.message)));
+      row.append(remove);
+    }
+    list.append(row);
   });
 }
 function renderOverlay(c) {
@@ -76,13 +105,15 @@ function renderOverlay(c) {
 }
 async function loadGhost(c) {
   const top = c.leaderboard[0];
-  if (!top) { ghost = null; ghostName = ''; $('ghost-label').textContent = 'Ghost replay available after the first submitted run'; return; }
-  try {
-    const data = await api(`/api/replays/${c.id}/${top.id}`);
-    if (challenge?.id !== c.id) return;
-    ghost = data.trace; ghostName = data.name;
-    $('ghost-label').textContent = `Ghost to beat: ${data.name} · ${formatTime(top.seconds)}s`;
-  } catch { $('ghost-label').textContent = 'Ghost unavailable. Scores are still saved.'; }
+  ghost = null; ghostName = ''; ghostRunId = null;
+  if (top) {
+    try {
+      const data = await api(`/api/replays/${c.id}/${top.id}`);
+      if (challenge?.id !== c.id) return;
+      ghost = data.trace; ghostName = data.name; ghostRunId = top.id;
+    } catch {}
+  }
+  if (!replayOnly) showGhostLabel();
 }
 async function refresh(data) {
   info = data;
@@ -107,7 +138,6 @@ async function refresh(data) {
     if (challenge?.id === c.id) { challenge = c; renderScores(c); }
     return;
   }
-  const oldBest = challenge?.leaderboard[0]?.id;
   challenge = c;
   $('challenge-title').textContent = c.title;
   $('challenge-number').textContent = `ROUND ${String(Math.max(1, data.history.length - data.history.findIndex(x => x.id === c.id))).padStart(2, '0')}`;
@@ -117,12 +147,12 @@ async function refresh(data) {
   else $('share-note').textContent = 'Share this link with your viewers. They can play in their browser.';
   renderScores(c); renderOverlay(c);
   if (oldId !== c.id && mode === 'challenge') setMode('challenge');
-  if (oldId !== c.id || oldBest !== c.leaderboard[0]?.id) await loadGhost(c);
+  if (oldId !== c.id || ghostRunId !== (c.leaderboard[0]?.id ?? null)) await loadGhost(c);
 }
 
 async function startRun() {
   if (!challenge || running || starting) return;
-  if (replayOnly) { replayOnly = false; await refresh(info); }
+  if (replayOnly) { endReplay(); await refresh(info); }
   starting = true; $('start').disabled = true;
   try {
     if (mode === 'challenge') {
@@ -136,7 +166,7 @@ async function startRun() {
     try { localStorage.setItem('btm-name', $('player-name').value); } catch {}
     map = world(sim.seed, sim.version); startState = { ...sim }; inputs = []; history = [{ ...sim }];
     keys = { jump: false, dash: false }; savedMoment = null; $('publish').disabled = true;
-    $('game-screen').hidden = true; $('countdown').hidden = false;
+    $('game-screen').hidden = true; $('countdown').hidden = false; showGame();
     for (const value of ['3','2','1']) { $('countdown').textContent = value; await new Promise(resolve => setTimeout(resolve, 450)); }
     $('countdown').hidden = true; starting = false; running = true; attempts++; lastTime = performance.now(); accumulator = 0;
     canvas.focus({ preventScroll: true });
@@ -182,16 +212,23 @@ async function watchReplay(cid, rid) {
   const data = await api(`/api/replays/${cid}/${rid}`);
   if (challenge.id !== cid) return;
   mode = 'challenge'; setMode('challenge');
-  ghost = data.trace; ghostName = data.name; replayOnly = true; replayFrame = 0;
+  replayTrace = data.trace; replayName = data.name; replayOnly = true; replayFrame = 0; accumulator = 0;
   $('game-screen').hidden = true; $('game-mode').textContent = 'GHOST REPLAY';
   $('ghost-label').textContent = `Watching ${data.name}'s recorded run`;
+  updateHud(); showGame();
   canvas.focus({ preventScroll: true });
+}
+async function removeRun(cid, run) {
+  if (!window.confirm(`Remove ${run.name} and all of their runs from this board?`)) return;
+  await api('/api/runs/remove', { challengeId: cid, runId: run.id });
+  await refresh(await api('/api/state'));
+  toast(`${run.name} was removed from the board.`);
 }
 
 function draw() {
   const W = 1000, H = 460;
   ctx.clearRect(0, 0, W, H);
-  const camera = Math.max(0, (replayOnly && ghost ? ghost[Math.min(replayFrame, ghost.length - 1)].x : sim.x) - 180);
+  const camera = Math.max(0, (replayOnly && replayTrace ? replayTrace[Math.min(replayFrame, replayTrace.length - 1)].x : sim.x) - 180);
   const gradient = ctx.createLinearGradient(0, 0, 0, H); gradient.addColorStop(0, '#17221e'); gradient.addColorStop(1, '#233329'); ctx.fillStyle = gradient; ctx.fillRect(0,0,W,H);
   // Warehouse skyline, parallax gantries, and a perspective floor.
   ctx.strokeStyle = '#9ab8840b'; ctx.lineWidth = 1;
@@ -235,9 +272,10 @@ function draw() {
     if(!isGhost){ctx.fillStyle='#16251b';ctx.fillRect(x+17,y+9,4,3);}
     ctx.restore();
   };
-  if (mode === 'challenge' && ghost) {
+  const shownGhost = replayOnly ? replayTrace : mode === 'challenge' ? ghost : null;
+  if (shownGhost) {
     const frame = replayOnly ? replayFrame : Math.max(0, sim.frame-startState.frame);
-    if (frame < ghost.length) {drawPlayer(ghost[frame],true);const p=ghost[frame];ctx.fillStyle='#9fc1d99c';ctx.font='9px monospace';ctx.fillText(replayOnly ? ghostName : 'GHOST',p.x-camera-2,p.y-12);}
+    if (frame < shownGhost.length) {const p=shownGhost[frame];drawPlayer(p,true);ctx.fillStyle='#9fc1d99c';ctx.font='9px monospace';ctx.fillText(replayOnly ? replayName : 'GHOST',p.x-camera-2,p.y-12);}
   }
   if (!replayOnly) drawPlayer(sim);
   if(sim.status==='crashed'&&!replayOnly){ctx.strokeStyle='#ff7955';ctx.lineWidth=2;for(let n=0;n<8;n++){const a=n*Math.PI/4;ctx.beginPath();ctx.moveTo(sim.x-camera+13+Math.cos(a)*28,sim.y+16+Math.sin(a)*28);ctx.lineTo(sim.x-camera+13+Math.cos(a)*37,sim.y+16+Math.sin(a)*37);ctx.stroke();}}
@@ -247,7 +285,7 @@ let lastTime=performance.now(), accumulator=0, lastPaint=0;
 function loop(now) {
   const dt=Math.min(100,now-lastTime);lastTime=now;
   if(running){accumulator+=dt;while(accumulator>=1000/60&&running){const input=(keys.jump?1:0)|(keys.dash?2:0);inputs.push(input);sim=step(sim,input,map,finish);if(sim.status==='running'){history.push({...sim});if(history.length>240)history.shift();}accumulator-=1000/60;if(sim.status!=='running')endRun();else if(inputs.length>=MAX_TICKS){running=false;toast('Run limit reached. Start again.');screen('TIME OUT','Fresh start?','This run exceeded the time limit.');}} updateHud();}
-  if(replayOnly){accumulator+=dt;while(accumulator>=1000/60){replayFrame++;accumulator-=1000/60;if(replayFrame>=ghost.length){replayOnly=false;screen('GHOST REPLAY COMPLETE','Your move.',`That was ${ghostName}’s run. Now chase it.`);refresh(info);break;}}}
+  if(replayOnly){accumulator+=dt;while(replayOnly&&accumulator>=1000/60){replayFrame++;accumulator-=1000/60;if(replayFrame>=replayTrace.length){const name=replayName;endReplay();screen('GHOST REPLAY COMPLETE','Your move.',`That was ${name}’s run. Now chase it.`);refresh(info);}}if(replayOnly)updateHud();}
   if(!overlayMode&&(running||replayOnly||now-lastPaint>100)){draw();lastPaint=now;}requestAnimationFrame(loop);
 }
 

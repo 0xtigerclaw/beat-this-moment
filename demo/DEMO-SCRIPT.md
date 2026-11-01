@@ -14,11 +14,11 @@ Launch a practice run. Jump with Space and dash with Shift. After a crash, selec
 
 ## 0:40–1:05 — Twitch connection
 
-Show the connected channel status. In the channel's chat, send `!challenge` and show the bot returning the playable URL. Open that link as the viewer. Only claim this live behavior when the reply is visibly present.
+Show the connected channel status and the bot's automatic post when the challenge is published. In the channel's chat, send `!challenge` and show the bot returning the playable URL. Open that link as the viewer. Only claim this live behavior when the reply is visibly present.
 
 ## 1:05–1:40 — Viewer attempts and verification
 
-Enter a demo player name and take the challenge. Show the resulting score on the shared board. Explain: “The server replays the inputs to verify the result.” Completed runs rank ahead of crashes, with completion time deciding the winner.
+Enter a demo player name and take the challenge. Show the resulting score on the shared board, and the bot's chat post if the run takes the lead. Explain: “The server replays the inputs to verify the result.” Completed runs rank ahead of crashes, with completion time deciding the winner.
 
 ## 1:40–1:55 — Replay
 
