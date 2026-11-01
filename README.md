@@ -151,10 +151,11 @@ The live demo runs independently on GCP; see [deployment and budget details](dep
 - Set `PUBLIC_URL` to the public HTTPS origin, without a trailing slash.
 - Set a long, random `HOST_KEY`. Remote host controls require this key; enter it in the app's setup dialog. It is never included in public state or challenge links.
 - If binding directly to the network, set `HOST=0.0.0.0`. The server refuses non-local binding without `HOST_KEY`.
+- Behind a reverse proxy, set `TRUST_PROXY=1` so each player gets their own rate limit. Without it, every player arrives from the proxy's address and shares one limit. The server then reads the rightmost `X-Forwarded-For` entry, so the proxy must overwrite or append to that header, as Caddy does by default. Leave it off when clients connect directly, or they could fake the header to dodge the limit.
 - Register the corresponding `https://your-host/auth/callback` redirect URL in Twitch's developer console, then restart and reauthorize.
 - Set `DATA_DIR` to a persistent state directory, or keep the same `.data/` directory across restarts. This prototype is a single Node process with JSON storage, not a multi-instance service. Hosting on an ephemeral filesystem loses scores.
 
-Host sessions are HttpOnly cookies with an eight-hour lifetime. Credentials and host keys stay server-side. POST routes reject cross-origin browser requests. Scores are recomputed by the server rather than accepted from clients.
+Host sessions are HttpOnly cookies with an eight-hour lifetime. Credentials and host keys stay server-side. POST routes reject cross-origin browser requests and are limited per address, to 600 a minute for gameplay and 10 a minute for `/api/host-session`. Scores are recomputed by the server rather than accepted from clients.
 
 When `PUBLIC_URL` is a temporary `trycloudflare.com` URL, the board polls every two seconds because Quick Tunnels do not support SSE. The URL stops working when the tunnel process stops, and a restarted tunnel gets a different hostname. Update `PUBLIC_URL` and the Twitch OAuth redirect if that happens. This is temporary demo access, not independent production hosting.
 

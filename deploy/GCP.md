@@ -21,6 +21,8 @@ A single Compute Engine `e2-micro` VM runs Node.js 24 and Caddy. This matches th
 
 The 10 GB standard persistent boot disk retains data through process and VM restarts. Deleting the VM or project may delete its disk; persistent storage is not a backup. Host sessions and in-progress run tickets remain in memory, so users may need to sign in or start a fresh attempt after a restart. Saved Twitch credentials are validated and refreshed before restoring the configured owner's connection. Disconnecting Twitch deletes its saved credentials.
 
+`/etc/beat-this-moment.env` must contain `TRUST_PROXY=1`. Node only sees connections from Caddy on loopback, so without this setting all players share one rate limit of 600 POSTs a minute. With it, each client address gets its own limit, read from the `X-Forwarded-For` value Caddy sets. [Caddy ignores client-sent values for that header by default](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#defaults), so players cannot fake it. Add `TRUST_PROXY=1` to that file when deploying this change, then run `sudo systemctl restart beat-this-moment`. `gcp-install.sh` replaces that file with the private configuration you give it, so include the setting there too.
+
 The public hostname uses the reserved IPv4 address and sslip.io DNS. It remains stable while that address is retained. A custom domain can replace it later, with a corresponding change to `PUBLIC_URL`, Caddy, and Twitch's registered OAuth callback.
 
 ## Budget

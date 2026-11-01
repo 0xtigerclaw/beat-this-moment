@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { isIP } from 'node:net';
 import { readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
@@ -10,6 +11,8 @@ const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const id = () => randomBytes(18).toString('base64url');
 const cleanName = v => String(v || '').replace(/[^\p{L}\p{N}_ .-]/gu, '').trim().slice(0, 24);
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
+// POSTs per address per minute. The 1.35s countdown caps one player at about 89, so 600 fits several flat-out players or a shared network of casual ones.
+const POST_LIMIT = 600, HOST_SESSION_LIMIT = 10;
 
 export function createApp(options = {}) {
   const port = options.port ?? Number(process.env.PORT || 3000);
@@ -21,6 +24,7 @@ export function createApp(options = {}) {
   const clientSecret = options.clientSecret ?? process.env.TWITCH_CLIENT_SECRET ?? '';
   const ownerChannel = (options.ownerChannel ?? process.env.TWITCH_OWNER_CHANNEL ?? '').trim().toLowerCase();
   if(ownerChannel && !/^[a-z0-9_]{1,25}$/.test(ownerChannel)) throw new Error('TWITCH_OWNER_CHANNEL must be a Twitch login name.');
+  const trustProxy = options.trustProxy ?? ['1', 'true'].includes(process.env.TRUST_PROXY);
   mkdirSync(dataDir, { recursive: true });
   const file = path.join(dataDir, 'challenges.json');
   let db = { activeId: null, challenges: [] };
@@ -53,6 +57,10 @@ export function createApp(options = {}) {
     return `@${user.name} your challenge entry: ${publicUrl}/c/${c.id}?join=${token} (single-use link, expires in 10 minutes)`;
   } });
   const cookies = req => Object.fromEntries((req.headers.cookie || '').split(';').map(x => x.trim().split('=')));
+  const clientAddress = req => {
+    const forwarded = trustProxy ? String(req.headers['x-forwarded-for'] || '').split(',').pop().trim() : '';
+    return isIP(forwarded) ? forwarded : req.socket.remoteAddress;
+  };
   const host = req => (sessions.get(cookies(req).btm_host) || 0) > Date.now();
   const requireHost = req => { if (!host(req)) throw fail('Open the host desk and unlock it first.', 401); };
   const json = (res, data, status = 200, headers = {}) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers }); res.end(JSON.stringify(data)); };
@@ -69,10 +77,11 @@ export function createApp(options = {}) {
       if (req.method === 'GET' && url.pathname === '/healthz') return json(res, { ok: true });
       if (req.method === 'POST') {
         if (req.headers.origin && req.headers.origin !== new URL(publicUrl).origin) throw fail('Origin not permitted.', 403);
-        const key = req.socket.remoteAddress;
+        const hostAttempt = url.pathname === '/api/host-session';
+        const key = `${hostAttempt ? 'host' : 'post'}:${clientAddress(req)}`;
         const rate = rates.get(key) || { at: Date.now(), count: 0 };
         if (Date.now() - rate.at > 60000) { rate.at = Date.now(); rate.count = 0; }
-        rates.set(key, rate); if (++rate.count > 180) throw fail('Too many requests. Try again in a minute.', 429);
+        rates.set(key, rate); if (++rate.count > (hostAttempt ? HOST_SESSION_LIMIT : POST_LIMIT)) throw fail('Too many requests. Try again in a minute.', 429);
       }
       if (req.method === 'GET' && url.pathname === '/api/state') return json(res, state());
       if (req.method === 'GET' && url.pathname === '/api/me') return json(res, { host: host(req), keyRequired: !!hostKey });

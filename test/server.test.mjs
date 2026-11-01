@@ -114,3 +114,64 @@ test('owner OAuth binds the browser, rejects other accounts, and unlocks only th
     assert.equal((await fetch(base+`/auth/callback?state=${valid.state}&code=dummy`,{headers:{cookie:valid.cookie},redirect:'manual'})).status,403);
   }finally{app.close();globalThis.fetch=realFetch;globalThis.WebSocket=realSocket;rmSync(dataDir,{recursive:true,force:true});}
 });
+
+const rateApp=async options=>{
+  const dataDir=mkdtempSync(path.join(tmpdir(),'btm-rate-'));
+  const app=createApp({port:0,dataDir,hostKey:'test-host-key',...options});
+  await new Promise(resolve=>app.server.listen(0,'127.0.0.1',resolve));
+  const base=`http://127.0.0.1:${app.server.address().port}`;
+  const post=async(route,forwarded,data={})=>(await fetch(base+route,{method:'POST',headers:{'Content-Type':'application/json',...(forwarded?{'X-Forwarded-For':forwarded}:{})},body:JSON.stringify(data)})).status;
+  const play=forwarded=>post('/api/runs/start',forwarded);
+  return {post,play,stop(){app.close();rmSync(dataDir,{recursive:true,force:true});}};
+};
+
+test('behind a trusted proxy, one address reaching the limit does not affect another',async()=>{
+  const {play,post,stop}=await rateApp({trustProxy:true});
+  try{
+    for(let i=0;i<600;i++)assert.notEqual(await play('203.0.113.1'),429);
+    assert.equal(await play('203.0.113.1'),429);
+    assert.equal(await play('198.51.100.9, 203.0.113.1'),429);
+    assert.notEqual(await play('203.0.113.2'),429);
+    assert.equal(await post('/api/host-session','203.0.113.1',{key:'test-host-key'}),200);
+    assert.notEqual(await play(),429);
+    assert.notEqual(await play('not-an-address'),429);
+  }finally{stop();}
+});
+
+test('without proxy trust, changing X-Forwarded-For does not get around the limit',async()=>{
+  const {play,stop}=await rateApp({trustProxy:false});
+  try{
+    for(let i=0;i<600;i++)assert.notEqual(await play(`203.0.113.${i%250}`),429);
+    assert.equal(await play('198.51.100.1'),429);
+    assert.equal(await play(),429);
+  }finally{stop();}
+});
+
+test('host key guesses hit their own limit while players still get through',async()=>{
+  const {play,post,stop}=await rateApp({trustProxy:true});
+  try{
+    for(let i=0;i<10;i++)assert.equal(await post('/api/host-session','203.0.113.1',{key:`guess-${i}`}),403);
+    assert.equal(await post('/api/host-session','203.0.113.1',{key:'guess-10'}),429);
+    assert.equal(await post('/api/host-session','203.0.113.1',{key:'test-host-key'}),429);
+    assert.notEqual(await play('203.0.113.1'),429);
+    assert.equal(await post('/api/host-session','203.0.113.2',{key:'test-host-key'}),200);
+  }finally{stop();}
+});
+
+test('TRUST_PROXY in the environment turns proxy trust on only for 1 or true',async()=>{
+  const saved=process.env.TRUST_PROXY;
+  const limited=async value=>{
+    process.env.TRUST_PROXY=value;
+    const {post,stop}=await rateApp();
+    try{
+      for(let i=0;i<10;i++)await post('/api/host-session','203.0.113.1',{key:'guess'});
+      return await post('/api/host-session','203.0.113.2',{key:'guess'})===429;
+    }finally{stop();}
+  };
+  try{
+    assert.equal(await limited('1'),false);
+    assert.equal(await limited('true'),false);
+    assert.equal(await limited('0'),true);
+    assert.equal(await limited(''),true);
+  }finally{if(saved===undefined)delete process.env.TRUST_PROXY;else process.env.TRUST_PROXY=saved;}
+});
