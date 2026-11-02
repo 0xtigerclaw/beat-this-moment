@@ -1,6 +1,5 @@
 *.md
 *.yml
-.claude/
 .data/
 .playwright-cli/
 demo/

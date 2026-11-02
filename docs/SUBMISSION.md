@@ -16,7 +16,7 @@ Twitch chat connects the experience: `!challenge` returns the current playable l
 
 ## How we built it
 
-Codex built the dependency-free Node.js server, the Canvas game, the interface, and the Twitch integration. A fixed-timestep engine runs in both the browser and server. Each attempt records its inputs, and the server replays those inputs from the saved snapshot to calculate and verify the result. Claude Code was used later for a code review and hardening work.
+Codex built the dependency-free Node.js server, the Canvas game, the interface, and the Twitch integration. A fixed-timestep engine runs in both the browser and server. Each attempt records its inputs, and the server replays those inputs from the saved snapshot to calculate and verify the result.
 
 The Twitch integration uses broadcaster OAuth, EventSub WebSockets, and the Send Chat Message API. The prototype runs on a small GCP VM with persistent disk and HTTPS, with an OBS scene for streaming and a separate transparent leaderboard overlay.
 

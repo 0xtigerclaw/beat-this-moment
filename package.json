@@ -8,8 +8,8 @@
     "start": "node --env-file-if-exists=.env server.mjs",
     "test": "node --test test/*.test.mjs",
     "check": "node --check server.mjs && node --check twitch.mjs && node --check moderation.mjs && node --check public/app.js && node --check public/engine.js",
-    "format": "npx --yes prettier@3.3.3 --write .",
-    "format:check": "npx --yes prettier@3.3.3 --check ."
+    "format": "npx --yes prettier@3.3.3 --write *.mjs package.json public test",
+    "format:check": "npx --yes prettier@3.3.3 --check *.mjs package.json public test"
   },
   "engines": {
     "node": ">=22.15"

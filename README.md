@@ -170,7 +170,7 @@ Server-side replay prevents fabricated scores but **does not prevent bots, tool-
 
 ## Built with Codex
 
-Codex was used to build and iterate on the game engine, saved-state challenge flow, interface, server-side verification, Twitch integration, tests, and demo setup. The [build contract](docs/BUILD.md) records the intended behavior, and [the verification notes](docs/QA.md) record what was actually verified. Claude Code was used later for a code review and hardening work, including rate limiting, login recovery, moderation, and chat announcements.
+Codex was used to build and iterate on the game engine, saved-state challenge flow, interface, server-side verification, Twitch integration, tests, and demo setup. The [build contract](docs/BUILD.md) records the intended behavior, and [the verification notes](docs/QA.md) record what was actually verified.
 
 All art is drawn procedurally in Canvas/CSS. There are no third-party images, fonts, music, or game assets in the app.
 
