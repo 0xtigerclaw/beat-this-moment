@@ -39,6 +39,16 @@ let joinToken = new URLSearchParams(location.search).get('join');
 let currentRunName = '';
 const canvas = $('game'),
   ctx = canvas.getContext('2d');
+const myRuns = new Set();
+try {
+  for (const id of JSON.parse(localStorage.getItem('btm-my-runs') || '[]')) myRuns.add(id);
+} catch {}
+function rememberRun(id) {
+  myRuns.add(id);
+  try {
+    localStorage.setItem('btm-my-runs', JSON.stringify([...myRuns].slice(-50)));
+  } catch {}
+}
 function guestId() {
   try {
     let value = localStorage.getItem('btm-guest-id');
@@ -157,15 +167,27 @@ function endReplay() {
   setMode('challenge');
   showGhostLabel();
 }
+function calloutMessage(c) {
+  const top = c.leaderboard[0];
+  if (!top)
+    return `Nobody has set a score on "${c.title}" yet. Same start for everyone. First shot at the board: ${c.shareUrl}`;
+  const score = top.completed ? `${top.seconds.toFixed(2)}s` : `${Math.floor(top.distance)}m`;
+  return `Think you can beat ${score} on "${c.title}"? Same start. No excuses. ${c.shareUrl}`;
+}
 function renderScores(c) {
+  $('callout-text').textContent = calloutMessage(c);
   const list = $('scores');
   list.replaceChildren();
   $('empty-board').hidden = c.leaderboard.length > 0;
   c.leaderboard.forEach((run, i) => {
     const row = document.createElement('li');
     row.append(text('span', String(i + 1).padStart(2, '0'), `rank ${i === 0 ? 'first' : ''}`));
+    const mine = myRuns.has(run.id);
+    row.classList.toggle('is-you', mine);
     const racer = text('span', run.name, 'racer');
-    racer.append(text('small', run.identity === 'twitch' ? 'TWITCH CHAT ENTRY' : 'GUEST'));
+    racer.append(
+      text('small', `${mine ? 'YOU · ' : ''}${run.identity === 'twitch' ? 'TWITCH CHAT ENTRY' : 'GUEST'}`),
+    );
     const result = text(
       'span',
       run.completed ? `${formatTime(run.seconds)}s` : `${Math.floor(run.distance)}m`,
@@ -261,6 +283,7 @@ async function refresh(data) {
       $('start').disabled = true;
       $('join-race').disabled = true;
       $('copy-link').disabled = true;
+      $('copy-message').disabled = true;
       return;
     }
   }
@@ -279,9 +302,8 @@ async function refresh(data) {
   $('challenge-distance').textContent = `${Math.round(c.finish - c.snapshot.x).toLocaleString()}m course`;
   $('attempts').textContent = `${c.attempts} ${c.attempts === 1 ? 'attempt' : 'attempts'}`;
   if (data.publicUrl.includes('localhost') || data.publicUrl.includes('127.0.0.1'))
-    $('share-note').textContent =
-      'Local links work on this computer. Set a public URL to invite remote viewers.';
-  else $('share-note').textContent = 'Share this link with your viewers. They can play in their browser.';
+    $('share-note').textContent = 'This link only works on this computer until you set a public URL.';
+  else $('share-note').textContent = 'No download or account needed. It opens right in the browser.';
   renderScores(c);
   renderOverlay(c);
   if (oldId !== c.id && mode === 'challenge') setMode('challenge');
@@ -316,7 +338,7 @@ async function startRun() {
       $('identity-note').textContent =
         data.identity === 'twitch'
           ? `Playing as ${data.name} · Twitch chat entry`
-          : 'Guest entry. Your name is not a verified Twitch identity.';
+          : 'Guest entry. Type !join in Twitch chat to race under your Twitch name.';
       challenge = data.challenge;
       sim = { ...challenge.snapshot };
       finish = challenge.finish;
@@ -382,6 +404,7 @@ async function endRun() {
     $('screen-hint').textContent = 'VERIFYING YOUR RUN…';
     try {
       const result = await api('/api/runs', { ticket: raceTicket, inputs });
+      rememberRun(result.run.id);
       $('screen-hint').textContent =
         `RUN VERIFIED · ${currentRunName.toUpperCase()} · YOUR BEST IS #${result.rank} OF ${result.players}`;
       raceTicket = null;
@@ -443,6 +466,8 @@ async function removeRun(cid, run) {
 function draw() {
   const W = 1000,
     H = 460;
+  // The backing store is twice the logical size so the course stays sharp at full width.
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
   ctx.clearRect(0, 0, W, H);
   const camera = Math.max(
     0,
@@ -526,7 +551,7 @@ function draw() {
     const x = o.x - camera;
     if (x < -100 || x > W + 50 || o.x > finish) return;
     ctx.shadowColor = '#ff613b';
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 24;
     ctx.fillStyle = '#ff613b';
     ctx.fillRect(x, FLOOR - o.h, o.w, o.h);
     ctx.shadowBlur = 0;
@@ -574,7 +599,7 @@ function draw() {
       ctx.globalAlpha = 1;
     }
     ctx.shadowColor = isGhost ? '#acd2ff' : '#d6ff7e';
-    ctx.shadowBlur = isGhost ? 8 : 16;
+    ctx.shadowBlur = isGhost ? 16 : 32;
     ctx.fillRect(x, y, PLAYER.w, PLAYER.h);
     ctx.shadowBlur = 0;
     ctx.fillStyle = isGhost ? '#3d7597' : '#3f572c';
@@ -660,31 +685,6 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-const boardTabs = [...document.querySelectorAll('[role=tab]')];
-function selectBoardTab(tab) {
-  for (const button of boardTabs) {
-    const selected = button === tab;
-    button.setAttribute('aria-selected', String(selected));
-    button.tabIndex = selected ? 0 : -1;
-    $(button.getAttribute('aria-controls')).hidden = !selected;
-  }
-}
-for (const [index, tab] of boardTabs.entries()) {
-  tab.addEventListener('click', () => selectBoardTab(tab));
-  tab.addEventListener('keydown', (event) => {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    event.preventDefault();
-    const next =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? boardTabs.length - 1
-          : (index + (event.key === 'ArrowRight' ? 1 : -1) + boardTabs.length) % boardTabs.length;
-    selectBoardTab(boardTabs[next]);
-    boardTabs[next].focus();
-  });
-}
-
 $('start').addEventListener('click', () => startRun());
 $('join-race').addEventListener('click', () => {
   if (running || starting) return toast('Finish this run first.');
@@ -693,7 +693,11 @@ $('join-race').addEventListener('click', () => {
 });
 $('switch-mode').addEventListener('click', () => setMode(mode === 'practice' ? 'challenge' : 'practice'));
 $('publish').addEventListener('click', publishMoment);
-$('copy-link').addEventListener('click', () => challenge && copy(challenge.shareUrl, 'Viewer link copied.'));
+$('copy-message').addEventListener(
+  'click',
+  () => challenge && copy(calloutMessage(challenge), 'Message copied. Go find the loudest person in chat.'),
+);
+$('copy-link').addEventListener('click', () => challenge && copy(challenge.shareUrl, 'Link copied.'));
 $('copy-overlay').addEventListener(
   'click',
   () => info && copy(`${info.publicUrl}/overlay`, 'OBS URL copied. Add it as a browser source (420 × 430).'),

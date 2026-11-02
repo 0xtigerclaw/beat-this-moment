@@ -67,9 +67,9 @@ flowchart LR
 
 ![Challenge entry and server-verified community leaderboard](docs/images/leaderboard.png)
 
-**The Community tab.** Example creator tags show how a challenge could be thrown to a familiar community. The names are made up.
+**Bring your chat.** Every challenge comes with a ready-to-paste message, the chat commands, and a link. The names shown are made-up examples.
 
-![Community tab with made-up example creator tags](docs/images/community.png)
+![Invite card with a ready-to-paste challenge message](docs/images/community.png)
 
 ## A path to deeper game integration
 

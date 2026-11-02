@@ -73,8 +73,8 @@
               <div class="canvas-wrap"
                 ><canvas
                   id="game"
-                  width="1000"
-                  height="460"
+                  width="2000"
+                  height="920"
                   tabindex="0"
                   aria-label="Neon Freight obstacle course. Space or up arrow to jump, Shift to dash."
                 ></canvas>
@@ -122,18 +122,6 @@
               ><button id="switch-mode" class="text-button">Race the active challenge ↗</button
               ><span id="ghost-label">Ghost replay available after the first submitted run</span></div
             >
-            <div class="how-it-works"
-              ><div
-                ><span>01</span><strong>Find your moment.</strong
-                ><p>Play. Crash. Pick up the gauntlet.</p></div
-              ><div
-                ><span>02</span><strong>Throw it to chat.</strong
-                ><p>Everyone gets the exact same start.</p></div
-              ><div
-                ><span>03</span><strong>Let the run talk.</strong
-                ><p>Verified scores. A ghost to chase.</p></div
-              ></div
-            >
           </div>
 
           <aside class="board-column">
@@ -141,90 +129,99 @@
               ><span>THE GAUNTLET</span><span class="live-label"><i></i> LIVE BOARD</span></div
             >
             <div class="challenge-card"
-              ><div class="challenge-number" id="challenge-number">ROUND 01</div
-              ><h2 id="challenge-title">The opening challenge</h2
-              ><div class="challenge-meta"
-                ><span id="challenge-distance">1,600m course</span><span id="attempts">0 attempts</span></div
-              ><div class="player-entry"
-                ><label for="player-name">YOUR PLAYER NAME <span>GUEST ENTRY</span></label
-                ><input
-                  id="player-name"
-                  maxlength="24"
-                  autocomplete="nickname"
-                  placeholder="Pick your racing name"
-                  value=""
-                  aria-describedby="identity-note"
-                /><small id="identity-note">Or type !join in Twitch chat for an attributed entry.</small></div
-              ><button id="join-race" class="button wide">Take the challenge <span>↗</span></button></div
-            >
-            <div class="board-tabs" role="tablist" aria-label="Challenge board">
-              <button id="leaderboard-tab" role="tab" aria-selected="true" aria-controls="leaderboard-panel"
-                >Leaderboard <span>01</span></button
-              >
-              <button
-                id="community-tab"
-                role="tab"
-                aria-selected="false"
-                aria-controls="community-panel"
-                tabindex="-1"
-                >Community <span>02</span></button
-              >
-            </div>
-            <section id="leaderboard-panel" role="tabpanel" aria-labelledby="leaderboard-tab">
-              <div class="leaderboard"
-                ><div class="leaderboard-head"><h3>Talk is cheap.</h3><span>BEST RUN / PLAYER</span></div
-                ><div class="table-head"><span>RACER</span><span>RESULT</span></div
-                ><ol id="scores"></ol
-                ><div id="empty-board" class="empty-board"
-                  ><span class="empty-track" aria-hidden="true">↗</span
-                  ><strong>The board is yours to take.</strong
-                  ><p>Finish the course to set the pace.<br />Crashes rank by distance reached.</p></div
-                ><div class="board-foot"
-                  ><span class="verified-dot"></span> Scores verified by replaying every input.</div
+              ><div class="challenge-info"
+                ><div class="challenge-number" id="challenge-number">ROUND 01</div
+                ><h2 id="challenge-title">The opening challenge</h2
+                ><div class="challenge-meta"
+                  ><span id="challenge-distance">1,600m course</span
+                  ><span id="attempts">0 attempts</span></div
                 ></div
-              >
-            </section>
-            <section
-              id="community-panel"
-              class="community-panel"
-              role="tabpanel"
-              aria-labelledby="community-tab"
-              hidden
-            >
-              <span class="eyebrow">DREAM MATCHUPS / EXAMPLES</span>
-              <h3>Who would you<br />throw this to?</h3>
-              <p>A familiar tag. The same brutal jump. Imagine your favorite community taking a shot.</p>
-              <div class="community-tags">
-                <div
-                  ><span class="tag-avatar" aria-hidden="true">RA</span
-                  ><span><strong>@ramp_gremlin_9000</strong><small>EXAMPLE CREATOR</small></span></div
-                >
-                <div
-                  ><span class="tag-avatar" aria-hidden="true">MA</span
-                  ><span><strong>@madame_handlebars</strong><small>EXAMPLE CREATOR</small></span></div
-                >
-                <div
-                  ><span class="tag-avatar" aria-hidden="true">SP</span
-                  ><span><strong>@sprocket_mcfaceplant</strong><small>EXAMPLE CREATOR</small></span></div
-                >
-              </div>
-              <small class="community-note">These names are made up, just examples.</small>
-              <div class="community-invite"
-                ><strong>Your chat gets the real invitation.</strong
-                ><p
-                  >Copy the challenge link below, or type <code>!challenge</code> in your connected
-                  channel.</p
-                ></div
-              >
-            </section>
-            <div class="share-card"
-              ><span class="eyebrow">THROW DOWN THE CHALLENGE</span><p>One link. Everybody gets a shot.</p
-              ><button id="copy-link" class="button wide outline">Copy viewer link <span>↗</span></button
-              ><button id="copy-overlay" class="text-button">Copy OBS overlay URL ↗</button
-              ><small id="share-note"
-                >Local links work on this computer. Set a public URL to invite remote viewers.</small
+              ><div class="entry-form"
+                ><div class="player-entry"
+                  ><label for="player-name">RACING AS</label
+                  ><input
+                    id="player-name"
+                    maxlength="24"
+                    autocomplete="nickname"
+                    placeholder="Pick a racing name"
+                    value=""
+                    aria-describedby="identity-note"
+                  /><small id="identity-note"
+                    >Guest entry. Type !join in Twitch chat to race under your Twitch name.</small
+                  ></div
+                ><button id="join-race" class="button">Take the challenge <span>↗</span></button></div
               ></div
             >
+            <div class="board-grid">
+              <div class="board-stack">
+                <section class="leaderboard" aria-labelledby="board-heading">
+                  <div class="leaderboard-head"
+                    ><h3 id="board-heading">Talk is cheap.</h3><span>BEST RUN PER PLAYER</span></div
+                  ><div class="table-head"><span>RACER</span><span>RESULT</span></div
+                  ><ol id="scores"></ol
+                  ><div id="empty-board" class="empty-board"
+                    ><span class="empty-track" aria-hidden="true">↗</span
+                    ><strong>The board is yours to take.</strong
+                    ><p
+                      >Finish first and everyone chases your ghost.<br />Crashes still rank by distance.</p
+                    ></div
+                  ><div class="board-foot"
+                    ><span class="verified-dot"></span> Every score is checked by replaying the run's
+                    inputs.</div
+                  >
+                </section>
+                <div class="how-it-works"
+                  ><div
+                    ><span>01</span><strong>Find your moment.</strong
+                    ><p>Play. Crash. Pick up the gauntlet.</p></div
+                  ><div
+                    ><span>02</span><strong>Throw it to chat.</strong
+                    ><p>Everyone gets the exact same start.</p></div
+                  ><div
+                    ><span>03</span><strong>Let the run talk.</strong
+                    ><p>Verified scores. A ghost to chase.</p></div
+                  ></div
+                >
+              </div>
+              <section class="callout" aria-labelledby="callout-heading">
+                <span class="callout-eyebrow">BRING YOUR CHAT</span>
+                <h3 id="callout-heading"
+                  ><span class="for-host">Someone in chat says they'd do it better.</span
+                  ><span class="for-viewer">Know someone who's all talk?</span></h3
+                >
+                <p class="callout-lede"
+                  ><span class="for-host">Hand them the exact same moment. The board settles it.</span
+                  ><span class="for-viewer">Hand them the exact same start. The board settles it.</span></p
+                >
+                <div class="callout-message"
+                  ><span class="callout-label">READY TO PASTE</span><p id="callout-text"></p
+                  ><div class="callout-actions"
+                    ><button id="copy-message" class="button primary">Copy message <span>↗</span></button
+                    ><button id="copy-link" class="text-button">Copy link only</button></div
+                  ></div
+                >
+                <dl class="callout-commands"
+                  ><div
+                    ><dt><code>!challenge</code></dt
+                    ><dd>Posts the link in chat.</dd></div
+                  ><div
+                    ><dt><code>!join</code></dt
+                    ><dd>Gets you a link that races under your Twitch name.</dd></div
+                  ></dl
+                >
+                <div class="callout-tags"
+                  ><span class="callout-label">WHO GOES FIRST?</span
+                  ><div class="community-tags"
+                    ><span>@ramp_gremlin_9000</span><span>@madame_handlebars</span
+                    ><span>@sprocket_mcfaceplant</span></div
+                  ><small>Made-up names. Yours will be funnier.</small></div
+                >
+                <div class="callout-foot"
+                  ><small id="share-note"></small
+                  ><button id="copy-overlay" class="text-button">Copy OBS overlay URL ↗</button></div
+                >
+              </section>
+            </div>
           </aside>
         </section>
         <footer
