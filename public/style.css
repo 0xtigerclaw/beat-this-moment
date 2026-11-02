@@ -1607,3 +1607,6 @@ body.broadcast-mode .leaderboard h3 {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.racer small.via-twitch {
+  color: #6f4bb8;
+}

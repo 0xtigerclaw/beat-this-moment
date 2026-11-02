@@ -14,7 +14,7 @@ Launch a practice run. Jump with Space and dash with Shift. After a crash, selec
 
 ## 0:40–1:05 — Twitch connection
 
-Show the connected channel status and the bot's automatic post when the challenge is published. In the channel's chat, send `!challenge` and show the bot returning the playable URL. Open that link as the viewer. Only claim this live behavior when the reply is visibly present.
+Show signing in with Twitch and the connected channel status, then the bot's automatic post when the challenge is published. In the channel's chat, send `!challenge` and show the bot returning the playable URL. Open that link as the viewer. Only claim this live behavior when the reply is visibly present.
 
 ## 1:05–1:40 — Viewer attempts and verification
 

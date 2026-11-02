@@ -12,15 +12,15 @@ We also think small games deserve a bigger place on Twitch. AI is making games f
 
 ## What it does
 
-A streamer plays our browser game, Neon Freight, and publishes a saved moment from before a crash. The bot posts the challenge in chat. Viewers follow the link and retry the same game state, and their results appear on a shared leaderboard and an OBS overlay. The best completed attempt becomes a ghost to race or replay, and the bot announces each new leader.
+A streamer signs in with Twitch, plays our browser game, Neon Freight, and publishes a saved moment from before a crash. The bot posts the challenge in chat. Viewers follow the link and retry the same game state, and their results appear on a shared leaderboard and an OBS overlay. The best completed attempt becomes a ghost to race or replay, and the bot announces each new leader.
 
-Twitch chat connects the experience: `!challenge` returns the current playable link, while `!join` creates a temporary entry link attributed to the chatter. Guests can also play without a Twitch account. Streamers can remove anyone from the board, and guest names pass a basic filter before they can reach the stream.
+Twitch chat connects the experience: `!challenge` returns the current playable link, while `!join` creates a temporary entry link attributed to the chatter. Twitch tells the bot who typed the command, so that run carries their Twitch name on the board. Guests can also play without a Twitch account, and are labeled as guests. Streamers can remove anyone from the board, and guest names pass a basic filter before they can reach the stream.
 
 ## How we built it
 
 Codex built the dependency-free Node.js server, the Canvas game, the interface, and the Twitch integration. A fixed-timestep engine runs in both the browser and server. Each attempt records its inputs, and the server replays those inputs from the saved snapshot to calculate and verify the result.
 
-The Twitch integration uses broadcaster OAuth, EventSub WebSockets, and the Send Chat Message API. The prototype runs on a small GCP VM with persistent disk and HTTPS, with an OBS scene for streaming and a separate transparent leaderboard overlay.
+The Twitch integration uses Twitch OAuth for broadcaster sign-in, with the token and owner account validated against Twitch, plus EventSub WebSockets and the Send Chat Message API. The prototype runs on a small GCP VM with persistent disk and HTTPS, with an OBS scene for streaming and a separate transparent leaderboard overlay.
 
 ## What we verified
 

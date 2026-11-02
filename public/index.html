@@ -147,7 +147,8 @@
                     value=""
                     aria-describedby="identity-note"
                   /><small id="identity-note"
-                    >Guest entry. Type !join in Twitch chat to race under your Twitch name.</small
+                    >Guest entry, not verified. Type !join in Twitch chat to race under your Twitch
+                    name.</small
                   ></div
                 ><button id="join-race" class="button">Take the challenge <span>↗</span></button></div
               ></div
@@ -240,12 +241,13 @@
     <div id="toast" class="toast" role="status" hidden></div>
     <dialog id="setup"
       ><div class="dialog-header"
-        ><span class="eyebrow">BROADCAST SETUP</span
+        ><span class="eyebrow">TWITCH SIGN-IN</span
         ><button id="setup-close" class="icon-button" aria-label="Close setup">×</button></div
-      ><h2>Bring your chat.</h2
+      ><h2>Sign in with Twitch.</h2
       ><p
-        >The game works locally now. Connecting Twitch lets viewers use <code>!challenge</code> and
-        <code>!join</code> in your channel.</p
+        >Streamers sign in with their Twitch account to run the host desk and turn on
+        <code>!challenge</code> and <code>!join</code> in their channel. Twitch asks for your permission
+        first. Viewers don't sign in here.</p
       ><div id="setup-status" class="setup-status"></div
       ><div id="host-unlock"
         ><label for="host-key">HOST KEY</label
@@ -253,7 +255,7 @@
           id="host-key"
           type="password"
           autocomplete="current-password"
-          placeholder="Only needed when hosting remotely"
+          placeholder="Only needed without Twitch sign-in"
         /><button id="unlock" class="button wide">Unlock host desk ↗</button></div
       ><ol class="setup-steps"
         ><li
@@ -272,7 +274,7 @@
             <code>TWITCH_CLIENT_SECRET</code>, then restart the app. Keep your secret out of chat.</span
           ></li
         ></ol
-      ><button id="connect-twitch" class="button primary wide">Authorize my Twitch channel ↗</button
+      ><button id="connect-twitch" class="button primary wide">Sign in with Twitch ↗</button
       ><button id="disconnect-twitch" class="text-button" hidden>Disconnect Twitch</button
       ><p class="setup-footnote"
         >Remote viewers need a publicly hosted server or tunnel. Set PUBLIC_URL to that address and update the

@@ -186,7 +186,11 @@ function renderScores(c) {
     row.classList.toggle('is-you', mine);
     const racer = text('span', run.name, 'racer');
     racer.append(
-      text('small', `${mine ? 'YOU · ' : ''}${run.identity === 'twitch' ? 'TWITCH CHAT ENTRY' : 'GUEST'}`),
+      text(
+        'small',
+        `${mine ? 'YOU · ' : ''}${run.identity === 'twitch' ? 'VIA TWITCH CHAT' : 'GUEST'}`,
+        run.identity === 'twitch' ? 'via-twitch' : undefined,
+      ),
     );
     const result = text(
       'span',
@@ -254,7 +258,7 @@ async function refresh(data) {
       connectionLost
         ? 'Reconnecting to server'
         : status.connected
-          ? `twitch.tv/${status.channel}`
+          ? `Connected to twitch.tv/${status.channel}`
           : status.connecting
             ? 'Connecting Twitch…'
             : 'Local session',
@@ -264,10 +268,20 @@ async function refresh(data) {
   $('setup-status').textContent =
     status.error ||
     (status.connected
-      ? `Connected to ${status.channel}. Chat commands are listening.`
+      ? `Signed in through Twitch as ${status.channel}. Chat commands are listening.`
       : status.configured
-        ? `Ready to connect ${status.ownerChannel || 'your channel'}. Twitch will ask permission to read and send chat messages.`
+        ? `Sign in as ${status.ownerChannel || 'the broadcaster'}. Twitch will ask permission to read and send chat messages.`
         : 'Twitch is not connected. Add your application credentials to enable authorization.');
+  $('setup-open').replaceChildren(
+    document.createTextNode(
+      status.connected && isHost
+        ? 'Twitch connected'
+        : status.ownerLogin
+          ? 'Sign in with Twitch'
+          : 'Connect Twitch',
+    ),
+    text('span', '↗'),
+  );
   $('connect-twitch').disabled = !status.configured || (!isHost && !status.ownerLogin);
   $('host-unlock').hidden = isHost || (status.configured && status.ownerLogin);
   document.querySelector('.setup-steps').hidden = status.configured;
@@ -337,8 +351,8 @@ async function startRun() {
       $('player-name').value = data.name;
       $('identity-note').textContent =
         data.identity === 'twitch'
-          ? `Playing as ${data.name} · Twitch chat entry`
-          : 'Guest entry. Type !join in Twitch chat to race under your Twitch name.';
+          ? `Racing as ${data.name}, identified through Twitch chat.`
+          : 'Guest entry, not verified. Type !join in Twitch chat to race under your Twitch name.';
       challenge = data.challenge;
       sim = { ...challenge.snapshot };
       finish = challenge.finish;

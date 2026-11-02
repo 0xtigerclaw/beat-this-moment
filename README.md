@@ -42,12 +42,13 @@ This is an amazing opportunity for Twitch. With an integration like this, a smal
 
 ## The experience
 
-1. **Find the moment.** The streamer plays Neon Freight, our jump-and-dash browser game.
-2. **Throw down the challenge.** After a crash, publish a saved state from shortly before it.
-3. **Invite chat.** `!challenge` returns the current playable link. Viewers can enter as guests; `!join` provides a temporary chat-attributed entry link.
-4. **Give everyone the same start.** Each attempt restores the same position, motion, energy, course seed, and simulation state.
-5. **Bring the results back.** Server-verified attempts update the leaderboard and OBS overlay.
-6. **Make it a rematch.** Replay the leading run or race alongside its ghost.
+1. **Sign in with Twitch.** The streamer connects their channel through Twitch's own sign-in, which unlocks the host desk and the chat bot.
+2. **Find the moment.** The streamer plays Neon Freight, our jump-and-dash browser game.
+3. **Throw down the challenge.** After a crash, publish a saved state from shortly before it.
+4. **Invite chat.** The bot posts the challenge, and `!challenge` returns the current playable link. `!join` gives a viewer a link that races under their Twitch name, and anyone can also enter as a guest.
+5. **Give everyone the same start.** Each attempt restores the same position, motion, energy, course seed, and simulation state.
+6. **Bring the results back.** Server-verified attempts update the leaderboard and OBS overlay.
+7. **Make it a rematch.** Replay the leading run or race alongside its ghost.
 
 ```mermaid
 flowchart LR
@@ -58,6 +59,16 @@ flowchart LR
     E --> F[Ghost replay and rematch]
     F --> C
 ```
+
+## How Twitch identity works
+
+| Who | How they enter | What it establishes |
+| --- | --- | --- |
+| Streamer | Signs in with Twitch OAuth, granting `user:read:chat` and `user:write:chat`. | The server validates the token with Twitch and checks the exact owner login before unlocking the host desk. Other accounts are refused. |
+| Viewer using `!join` | Types `!join` in chat. Twitch's EventSub tells the bot who sent it, and the bot replies with a single-use, ten-minute link. | The run carries that chatter's Twitch name and shows **VIA TWITCH CHAT** on the board. The link is visible in chat, so this is not a viewer login. |
+| Guest | Types a name and plays. | Nothing. The run shows **GUEST**. |
+
+No Twitch password ever reaches this app. A host key remains as a fallback for deployments without Twitch sign-in.
 
 ## Gameplay gallery
 
@@ -133,7 +144,7 @@ The game works without Twitch. To demonstrate the live integration:
 2. Register an application at <https://dev.twitch.tv/console/apps> (a web/chat application category is suitable).
 3. Register this exact OAuth redirect URL: `http://localhost:3000/auth/callback`.
 4. Copy `.env.example` to `.env`, fill in `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET`, and restart the server. Do not commit the file or paste its secret into chat.
-5. Click **Connect Twitch**, then **Authorize my Twitch channel**. Authorize as the broadcaster whose channel will host the game.
+5. Click **Connect Twitch**, then **Sign in with Twitch**. Authorize as the broadcaster whose channel will host the game.
 6. In that channel's Twitch chat, type:
    - `!challenge`: replies with the active challenge link.
    - `!join`: replies with a single-use, ten-minute entry link attributed to the chatter. Subsequent retries in the same page retain that identity for one hour.
