@@ -32,8 +32,6 @@ The engagement hypothesis is simple: **make the stream's memorable moments somet
 | Twitch | A possible loop connecting chat, gameplay, and the live broadcast. |
 | Game developer | A way to make a specific game moment playable through a Twitch community. |
 
-These are product hypotheses, not measured retention or engagement gains. A next experiment would track challenge opens, first attempts, repeat attempts, and viewers returning to the stream after playing.
-
 ## Why small games belong on Twitch
 
 AI is making games far easier to build. One person with a good idea can now ship something playable in days. That means more indie developers, and we are already seeing more small games come out.
