@@ -16,7 +16,7 @@ The idea is to give Twitch communities another way to participate in the moment 
 
 **[Play the live challenge](https://beat-the-moment-35-211-225-40.sslip.io/play)** · [GCP deployment](deploy/GCP.md)
 
-[Watch the demo video](https://youtu.be/4kP4JdvQcqU) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](docs/QA.md)
+[Watch the demo video](https://youtu.be/4kP4JdvQcqU) · [Verification notes](docs/QA.md)
 
 > Working hackathon prototype, built with Codex.
 

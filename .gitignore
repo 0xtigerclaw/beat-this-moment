@@ -6,16 +6,6 @@ node_modules/
 output/
 .playwright-cli/
 .DS_Store
-# Local OBS recordings and intermediate demo assets.
-demo/edit/
-demo/voice/
-demo/shots/
-demo/footage/
-demo/final/
-demo/*.mov
-demo/*.mp4
-!demo/beat-this-moment-draft.mp4
-demo/*-contact-sheet.jpg
-demo/*-preview.jpg
-demo/edit-manifest.json
+# Demo video source, recordings, and renders stay local.
+demo/
 __pycache__/
