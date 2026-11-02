@@ -2,7 +2,9 @@
 
 Live game: **https://beat-the-moment-35-211-225-40.sslip.io**
 
-![Hosted game with migrated scores and a verified cloud attempt](../docs/images/cloud-deployment.png)
+![The hosted game](../docs/images/cloud-deployment.png)
+
+Public link for players: **https://beat-the-moment-35-211-225-40.sslip.io/play**, which always opens the active challenge. Twitch OAuth callback: `https://beat-the-moment-35-211-225-40.sslip.io/auth/callback`.
 
 Project: `beat-the-moment-964ea6` · Region: `us-east1` · Zone: `us-east1-b`
 
@@ -52,7 +54,19 @@ sudo journalctl -u beat-this-moment -n 50 --no-pager
 curl -fsS http://127.0.0.1:3000/healthz
 ```
 
-`gcp-startup.sh` bootstraps a fresh Debian 12 VM. `gcp-install.sh` installs an application archive and private environment file. The latter expects a hostname, a runtime tar path, and a private configuration path. Do not include credentials in instance metadata, startup scripts, source archives, or the repository. Review an update before installing it; preserve the existing state directory. The runtime archive must contain `package.json`, `server.mjs`, `twitch.mjs`, `moderation.mjs`, and `public/`.
+`gcp-startup.sh` bootstraps a fresh Debian 12 VM. `gcp-install.sh` does the first install of an application archive and private environment file. It expects a hostname, a runtime tar path, and a private configuration path. Do not include credentials in instance metadata, startup scripts, source archives, or the repository.
+
+## Update
+
+Run these from the project root. `gcp-update.sh` backs up the app, data, and settings on the VM, and rolls back if the app fails its health check. A restart ends host sessions and runs in progress, and the Twitch bot reconnects by itself.
+
+```sh
+git archive --format=tar.gz -o /tmp/btm-runtime.tgz HEAD package.json server.mjs twitch.mjs moderation.mjs public
+gcloud compute scp /tmp/btm-runtime.tgz beat-the-moment:/tmp/btm-runtime.tgz --project=beat-the-moment-964ea6 --zone=us-east1-b --tunnel-through-iap
+gcloud compute ssh beat-the-moment --project=beat-the-moment-964ea6 --zone=us-east1-b --tunnel-through-iap --command "$(cat deploy/gcp-update.sh)"
+```
+
+Course changes need care. Saved runs replay against their course version, so changing an existing version breaks its older replays.
 
 ## Stop and remove
 

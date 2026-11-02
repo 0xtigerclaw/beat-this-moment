@@ -1,73 +1,286 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#151716">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>Beat This Moment — give chat a shot</title>
-  <link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
-</head>
-<body>
-  <div id="app">
-    <header class="topbar">
-      <a href="/" class="brand" aria-label="Beat This Moment home"><span class="brand-mark">↗</span> BEAT THIS MOMENT<span class="beta">PROTOTYPE 01</span></a>
-      <nav><span id="connection" class="connection"><i></i> Local session</span><button id="setup-open" class="button subtle">Connect Twitch <span>↗</span></button></nav>
-    </header>
-    <main>
-      <section class="intro">
-        <div><div class="eyebrow"><span class="tiny-square"></span> THE BACKSEAT ENDS HERE</div><h1>All talk?<br><span>Your turn.</span></h1><p>The same moment. The same odds.<br>Give chat a shot at beating your run.</p></div>
-        <div class="intro-right"><div class="edition">01 / NEON FREIGHT</div><div class="sketch-track" aria-hidden="true"><span class="sketch-player"></span><span></span><span></span><span></span><b>↗</b></div><div class="flow"><span>01 PLAY</span><i>→</i><span>02 CHALLENGE</span><i>→</i><span>03 SETTLE IT</span></div></div>
-      </section>
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#151716" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Beat This Moment — give chat a shot</title>
+    <meta
+      name="description"
+      content="A streamer saves a moment from just before a crash. Twitch chat gets the same start and a shared leaderboard."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Beat This Moment" />
+    <meta
+      property="og:description"
+      content="Chat thinks it can do better. Give it the same start and find out."
+    />
+    <meta property="og:url" content="__PUBLIC_URL__" />
+    <meta property="og:image" content="__PUBLIC_URL__/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/style.css" /><script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <a href="/" class="brand" aria-label="Beat This Moment home"
+          ><span class="brand-mark">↗</span> BEAT THIS MOMENT<span class="beta">PROTOTYPE 01</span></a
+        >
+        <nav
+          ><span id="connection" class="connection"><i></i> Local session</span
+          ><button id="setup-open" class="button subtle">Connect Twitch <span>↗</span></button></nav
+        >
+      </header>
+      <main>
+        <section class="intro">
+          <div
+            ><div class="eyebrow"><span class="tiny-square"></span> THE BACKSEAT ENDS HERE</div
+            ><h1>All talk?<br /><span>Your turn.</span></h1
+            ><p>The same moment. The same odds. <br />Give chat a shot at beating your run.</p></div
+          >
+          <div class="intro-right"
+            ><div class="edition">01 / NEON FREIGHT</div
+            ><div class="sketch-track" aria-hidden="true"
+              ><span class="sketch-player"></span><span></span><span></span><span></span><b>↗</b></div
+            ><div class="flow"
+              ><span>01 PLAY</span><i>→</i><span>02 CHALLENGE</span><i>→</i><span>03 SETTLE IT</span></div
+            ></div
+          >
+        </section>
 
-      <section class="workspace">
-        <div class="play-column">
-          <div class="section-label"><span id="desk-label">THE HOST DESK</span><span id="round-label">PRACTICE / NO SCORE SUBMITTED</span></div>
-          <div class="arena">
-            <div class="arena-top"><div><span class="arena-badge">NF</span><span>NEON FREIGHT<span class="arena-subtitle" id="course-subtitle">Make the jump. Keep your nerve.</span></span></div><div class="arena-levels"><span id="difficulty" class="difficulty-chip">HARD / NIGHT SHIFT</span><span id="game-mode" class="mode-chip">PRACTICE</span></div></div>
-            <div class="canvas-wrap"><canvas id="game" width="1000" height="460" tabindex="0" aria-label="Neon Freight obstacle course. Space or up arrow to jump, Shift to dash."></canvas>
-              <div id="game-screen" class="game-screen"><span id="screen-kicker">A LITTLE LESS TALK.</span><h2 id="screen-title">Make your move.</h2><p id="screen-description">Clear the freight. Dash for a faster time.<br>One crash is all it takes.</p><button id="start" class="button primary">Launch run <span>↗</span></button><span class="screen-hint" id="screen-hint">SPACE TO START · NO DOWNLOADS</span></div>
-              <div id="countdown" class="countdown" hidden></div>
+        <section class="workspace">
+          <div class="play-column">
+            <div class="section-label"
+              ><span id="desk-label">THE HOST DESK</span
+              ><span id="round-label">PRACTICE / NO SCORE SUBMITTED</span></div
+            >
+            <div class="arena">
+              <div class="arena-top"
+                ><div
+                  ><span class="arena-badge">NF</span
+                  ><span
+                    >NEON FREIGHT<span class="arena-subtitle" id="course-subtitle"
+                      >Make the jump. Keep your nerve.</span
+                    ></span
+                  ></div
+                ><div class="arena-levels"
+                  ><span id="difficulty" class="difficulty-chip">HARD / NIGHT SHIFT</span
+                  ><span id="game-mode" class="mode-chip">PRACTICE</span></div
+                ></div
+              >
+              <div class="canvas-wrap"
+                ><canvas
+                  id="game"
+                  width="1000"
+                  height="460"
+                  tabindex="0"
+                  aria-label="Neon Freight obstacle course. Space or up arrow to jump, Shift to dash."
+                ></canvas>
+                <div id="game-screen" class="game-screen"
+                  ><span id="screen-kicker">A LITTLE LESS TALK.</span
+                  ><h2 id="screen-title">Make your move.</h2
+                  ><p id="screen-description"
+                    >Clear the freight. Dash for a faster time.<br />One crash is all it takes.</p
+                  ><button id="start" class="button primary">Launch run <span>↗</span></button
+                  ><span class="screen-hint" id="screen-hint">SPACE TO START · NO DOWNLOADS</span></div
+                >
+                <div id="countdown" class="countdown" hidden></div>
+              </div>
+              <div class="game-hud"
+                ><div
+                  ><span class="stat-label">RUN TIME</span><strong id="time">00.00<span>s</span></strong></div
+                ><div
+                  ><span class="stat-label">DISTANCE</span
+                  ><strong id="distance">0000<span>m</span></strong></div
+                ><div class="energy-stat"
+                  ><span class="stat-label">DASH RESERVE <span id="energy-value">100%</span></span
+                  ><div class="energy-track"><div id="energy-fill"></div></div></div
+                ><div class="controls"
+                  ><span><kbd>SPACE</kbd> Jump</span><span><kbd>SHIFT</kbd> Dash</span></div
+                ></div
+              >
             </div>
-            <div class="game-hud"><div><span class="stat-label">RUN TIME</span><strong id="time">00.00<span>s</span></strong></div><div><span class="stat-label">DISTANCE</span><strong id="distance">0000<span>m</span></strong></div><div class="energy-stat"><span class="stat-label">DASH RESERVE <span id="energy-value">100%</span></span><div class="energy-track"><div id="energy-fill"></div></div></div><div class="controls"><span><kbd>SPACE</kbd> Jump</span><span><kbd>SHIFT</kbd> Dash</span></div></div>
+            <div class="touch-controls"
+              ><button id="touch-jump" class="button">JUMP ↑</button
+              ><button id="touch-dash" class="button">HOLD TO DASH →</button></div
+            >
+            <div id="host-tools" class="host-tools">
+              <div class="moment-copy"
+                ><span class="moment-icon">⌖</span
+                ><div
+                  ><strong id="moment-title">Find a moment worth settling.</strong
+                  ><p id="moment-description"
+                    >Play a run, then send chat back to just before the crash.</p
+                  ></div
+                ></div
+              >
+              <button id="publish" class="button primary" disabled>Challenge chat <span>↗</span></button>
+            </div>
+            <div class="under-game"
+              ><button id="switch-mode" class="text-button">Race the active challenge ↗</button
+              ><span id="ghost-label">Ghost replay available after the first submitted run</span></div
+            >
+            <div class="how-it-works"
+              ><div
+                ><span>01</span><strong>Find your moment.</strong
+                ><p>Play. Crash. Pick up the gauntlet.</p></div
+              ><div
+                ><span>02</span><strong>Throw it to chat.</strong
+                ><p>Everyone gets the exact same start.</p></div
+              ><div
+                ><span>03</span><strong>Let the run talk.</strong
+                ><p>Verified scores. A ghost to chase.</p></div
+              ></div
+            >
           </div>
-          <div class="touch-controls"><button id="touch-jump" class="button">JUMP ↑</button><button id="touch-dash" class="button">HOLD TO DASH →</button></div>
-          <div id="host-tools" class="host-tools">
-            <div class="moment-copy"><span class="moment-icon">⌖</span><div><strong id="moment-title">Find a moment worth settling.</strong><p id="moment-description">Play a run, then send chat back to just before the crash.</p></div></div>
-            <button id="publish" class="button primary" disabled>Challenge chat <span>↗</span></button>
-          </div>
-          <div class="under-game"><button id="switch-mode" class="text-button">Race the active challenge ↗</button><span id="ghost-label">Ghost replay available after the first submitted run</span></div>
-          <div class="how-it-works"><div><span>01</span><strong>Find your moment.</strong><p>Play. Crash. Pick up the gauntlet.</p></div><div><span>02</span><strong>Throw it to chat.</strong><p>Everyone gets the exact same start.</p></div><div><span>03</span><strong>Let the run talk.</strong><p>Verified scores. A ghost to chase.</p></div></div>
-        </div>
 
-        <aside class="board-column">
-          <div class="section-label"><span>THE GAUNTLET</span><span class="live-label"><i></i> LIVE BOARD</span></div>
-          <div class="challenge-card"><div class="challenge-number" id="challenge-number">ROUND 01</div><h2 id="challenge-title">The opening challenge</h2><div class="challenge-meta"><span id="challenge-distance">1,600m course</span><span id="attempts">0 attempts</span></div><div class="player-entry"><label for="player-name">YOUR PLAYER NAME <span>GUEST ENTRY</span></label><input id="player-name" maxlength="24" autocomplete="nickname" placeholder="Pick your racing name" value="" aria-describedby="identity-note"><small id="identity-note">Or type !join in Twitch chat for an attributed entry.</small></div><button id="join-race" class="button wide">Take the challenge <span>↗</span></button></div>
-          <div class="board-tabs" role="tablist" aria-label="Challenge board">
-            <button id="leaderboard-tab" role="tab" aria-selected="true" aria-controls="leaderboard-panel">Leaderboard <span>01</span></button>
-            <button id="community-tab" role="tab" aria-selected="false" aria-controls="community-panel" tabindex="-1">Community <span>02</span></button>
-          </div>
-          <section id="leaderboard-panel" role="tabpanel" aria-labelledby="leaderboard-tab">
-          <div class="leaderboard"><div class="leaderboard-head"><h3>Talk is cheap.</h3><span>BEST RUN / PLAYER</span></div><div class="table-head"><span>RACER</span><span>RESULT</span></div><ol id="scores"></ol><div id="empty-board" class="empty-board"><span class="empty-track" aria-hidden="true">↗</span><strong>The board is yours to take.</strong><p>Finish the course to set the pace.<br>Crashes rank by distance reached.</p></div><div class="board-foot"><span class="verified-dot"></span> Scores verified by replaying every input.</div></div>
-          </section>
-          <section id="community-panel" class="community-panel" role="tabpanel" aria-labelledby="community-tab" hidden>
-            <span class="eyebrow">DREAM MATCHUPS / EXAMPLES</span>
-            <h3>Who would you<br>throw this to?</h3>
-            <p>A familiar tag. The same brutal jump. Imagine your favorite community taking a shot.</p>
-            <div class="community-tags">
-              <div><span class="tag-avatar" aria-hidden="true">RA</span><span><strong>@ramp_gremlin_9000</strong><small>EXAMPLE CREATOR</small></span></div>
-              <div><span class="tag-avatar" aria-hidden="true">MA</span><span><strong>@madame_handlebars</strong><small>EXAMPLE CREATOR</small></span></div>
-              <div><span class="tag-avatar" aria-hidden="true">SP</span><span><strong>@sprocket_mcfaceplant</strong><small>EXAMPLE CREATOR</small></span></div>
+          <aside class="board-column">
+            <div class="section-label"
+              ><span>THE GAUNTLET</span><span class="live-label"><i></i> LIVE BOARD</span></div
+            >
+            <div class="challenge-card"
+              ><div class="challenge-number" id="challenge-number">ROUND 01</div
+              ><h2 id="challenge-title">The opening challenge</h2
+              ><div class="challenge-meta"
+                ><span id="challenge-distance">1,600m course</span><span id="attempts">0 attempts</span></div
+              ><div class="player-entry"
+                ><label for="player-name">YOUR PLAYER NAME <span>GUEST ENTRY</span></label
+                ><input
+                  id="player-name"
+                  maxlength="24"
+                  autocomplete="nickname"
+                  placeholder="Pick your racing name"
+                  value=""
+                  aria-describedby="identity-note"
+                /><small id="identity-note">Or type !join in Twitch chat for an attributed entry.</small></div
+              ><button id="join-race" class="button wide">Take the challenge <span>↗</span></button></div
+            >
+            <div class="board-tabs" role="tablist" aria-label="Challenge board">
+              <button id="leaderboard-tab" role="tab" aria-selected="true" aria-controls="leaderboard-panel"
+                >Leaderboard <span>01</span></button
+              >
+              <button
+                id="community-tab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="community-panel"
+                tabindex="-1"
+                >Community <span>02</span></button
+              >
             </div>
-            <small class="community-note">These names are made up, just examples.</small>
-            <div class="community-invite"><strong>Your chat gets the real invitation.</strong><p>Copy the challenge link below, or type <code>!challenge</code> in your connected channel.</p></div>
-          </section>
-          <div class="share-card"><span class="eyebrow">THROW DOWN THE CHALLENGE</span><p>One link. Everybody gets a shot.</p><button id="copy-link" class="button wide outline">Copy viewer link <span>↗</span></button><button id="copy-overlay" class="text-button">Copy OBS overlay URL ↗</button><small id="share-note">Local links work on this computer. Set a public URL to invite remote viewers.</small></div>
-        </aside>
-      </section>
-      <footer><span>BUILT FOR THE MOMENT. PLAYED BY THE COMMUNITY.</span><span>BEAT THIS MOMENT / CODEX × TWITCHCON</span></footer>
-    </main>
-  </div>
-  <div id="overlay" class="broadcast-overlay" hidden><div class="overlay-top"><span class="brand-mark">↗</span><div><span>BEAT THIS MOMENT</span><strong id="overlay-title"></strong></div><span id="overlay-count"></span></div><ol id="overlay-scores"></ol><div class="overlay-bottom">TYPE !CHALLENGE IN CHAT TO PLAY</div></div>
-  <div id="toast" class="toast" role="status" hidden></div>
-  <dialog id="setup"><div class="dialog-header"><span class="eyebrow">BROADCAST SETUP</span><button id="setup-close" class="icon-button" aria-label="Close setup">×</button></div><h2>Bring your chat.</h2><p>The game works locally now. Connecting Twitch lets viewers use <code>!challenge</code> and <code>!join</code> in your channel.</p><div id="setup-status" class="setup-status"></div><div id="host-unlock"><label for="host-key">HOST KEY</label><input id="host-key" type="password" autocomplete="current-password" placeholder="Only needed when hosting remotely"><button id="unlock" class="button wide">Unlock host desk ↗</button></div><ol class="setup-steps"><li><strong>Register a Twitch application.</strong><span>Open the <a href="https://dev.twitch.tv/console/apps" target="_blank" rel="noopener noreferrer">Twitch developer console ↗</a>. Your new account may need 2FA enabled first.</span></li><li><strong>Set the redirect URL.</strong><code id="redirect-url"></code></li><li><strong>Add credentials on the server.</strong><span>Copy <code>.env.example</code> to <code>.env</code>, fill in <code>TWITCH_CLIENT_ID</code> and <code>TWITCH_CLIENT_SECRET</code>, then restart the app. Keep your secret out of chat.</span></li></ol><button id="connect-twitch" class="button primary wide">Authorize my Twitch channel ↗</button><button id="disconnect-twitch" class="text-button" hidden>Disconnect Twitch</button><p class="setup-footnote">Remote viewers need a publicly hosted server or tunnel. Set PUBLIC_URL to that address and update the OAuth redirect URL to match.</p></dialog>
-</body></html>
+            <section id="leaderboard-panel" role="tabpanel" aria-labelledby="leaderboard-tab">
+              <div class="leaderboard"
+                ><div class="leaderboard-head"><h3>Talk is cheap.</h3><span>BEST RUN / PLAYER</span></div
+                ><div class="table-head"><span>RACER</span><span>RESULT</span></div
+                ><ol id="scores"></ol
+                ><div id="empty-board" class="empty-board"
+                  ><span class="empty-track" aria-hidden="true">↗</span
+                  ><strong>The board is yours to take.</strong
+                  ><p>Finish the course to set the pace.<br />Crashes rank by distance reached.</p></div
+                ><div class="board-foot"
+                  ><span class="verified-dot"></span> Scores verified by replaying every input.</div
+                ></div
+              >
+            </section>
+            <section
+              id="community-panel"
+              class="community-panel"
+              role="tabpanel"
+              aria-labelledby="community-tab"
+              hidden
+            >
+              <span class="eyebrow">DREAM MATCHUPS / EXAMPLES</span>
+              <h3>Who would you<br />throw this to?</h3>
+              <p>A familiar tag. The same brutal jump. Imagine your favorite community taking a shot.</p>
+              <div class="community-tags">
+                <div
+                  ><span class="tag-avatar" aria-hidden="true">RA</span
+                  ><span><strong>@ramp_gremlin_9000</strong><small>EXAMPLE CREATOR</small></span></div
+                >
+                <div
+                  ><span class="tag-avatar" aria-hidden="true">MA</span
+                  ><span><strong>@madame_handlebars</strong><small>EXAMPLE CREATOR</small></span></div
+                >
+                <div
+                  ><span class="tag-avatar" aria-hidden="true">SP</span
+                  ><span><strong>@sprocket_mcfaceplant</strong><small>EXAMPLE CREATOR</small></span></div
+                >
+              </div>
+              <small class="community-note">These names are made up, just examples.</small>
+              <div class="community-invite"
+                ><strong>Your chat gets the real invitation.</strong
+                ><p
+                  >Copy the challenge link below, or type <code>!challenge</code> in your connected
+                  channel.</p
+                ></div
+              >
+            </section>
+            <div class="share-card"
+              ><span class="eyebrow">THROW DOWN THE CHALLENGE</span><p>One link. Everybody gets a shot.</p
+              ><button id="copy-link" class="button wide outline">Copy viewer link <span>↗</span></button
+              ><button id="copy-overlay" class="text-button">Copy OBS overlay URL ↗</button
+              ><small id="share-note"
+                >Local links work on this computer. Set a public URL to invite remote viewers.</small
+              ></div
+            >
+          </aside>
+        </section>
+        <footer
+          ><span>BUILT FOR THE MOMENT. PLAYED BY THE COMMUNITY.</span
+          ><span>BEAT THIS MOMENT / CODEX × TWITCHCON</span></footer
+        >
+      </main>
+    </div>
+    <div id="overlay" class="broadcast-overlay" hidden
+      ><div class="overlay-top"
+        ><span class="brand-mark">↗</span
+        ><div><span>BEAT THIS MOMENT</span><strong id="overlay-title"></strong></div
+        ><span id="overlay-count"></span></div
+      ><ol id="overlay-scores"></ol><div class="overlay-bottom">TYPE !CHALLENGE IN CHAT TO PLAY</div></div
+    >
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="setup"
+      ><div class="dialog-header"
+        ><span class="eyebrow">BROADCAST SETUP</span
+        ><button id="setup-close" class="icon-button" aria-label="Close setup">×</button></div
+      ><h2>Bring your chat.</h2
+      ><p
+        >The game works locally now. Connecting Twitch lets viewers use <code>!challenge</code> and
+        <code>!join</code> in your channel.</p
+      ><div id="setup-status" class="setup-status"></div
+      ><div id="host-unlock"
+        ><label for="host-key">HOST KEY</label
+        ><input
+          id="host-key"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Only needed when hosting remotely"
+        /><button id="unlock" class="button wide">Unlock host desk ↗</button></div
+      ><ol class="setup-steps"
+        ><li
+          ><strong>Register a Twitch application.</strong
+          ><span
+            >Open the
+            <a href="https://dev.twitch.tv/console/apps" target="_blank" rel="noopener noreferrer"
+              >Twitch developer console ↗</a
+            >. Your new account may need 2FA enabled first.</span
+          ></li
+        ><li><strong>Set the redirect URL.</strong><code id="redirect-url"></code></li
+        ><li
+          ><strong>Add credentials on the server.</strong
+          ><span
+            >Copy <code>.env.example</code> to <code>.env</code>, fill in <code>TWITCH_CLIENT_ID</code> and
+            <code>TWITCH_CLIENT_SECRET</code>, then restart the app. Keep your secret out of chat.</span
+          ></li
+        ></ol
+      ><button id="connect-twitch" class="button primary wide">Authorize my Twitch channel ↗</button
+      ><button id="disconnect-twitch" class="text-button" hidden>Disconnect Twitch</button
+      ><p class="setup-footnote"
+        >Remote viewers need a publicly hosted server or tunnel. Set PUBLIC_URL to that address and update the
+        OAuth redirect URL to match.</p
+      ></dialog
+    >
+  </body></html
+>

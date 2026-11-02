@@ -1,0 +1,9 @@
+*.md
+*.yml
+.claude/
+.data/
+.playwright-cli/
+demo/
+docs/
+deploy/
+output/

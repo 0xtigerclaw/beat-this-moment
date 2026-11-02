@@ -1,5 +1,7 @@
 # Beat This Moment
 
+[![Tests](https://github.com/0xtigerclaw/beat-this-moment/actions/workflows/test.yml/badge.svg)](https://github.com/0xtigerclaw/beat-this-moment/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 ### A streamer throws down a challenge. The community gets a shot.
 
 “Think you can do better?” is a great invitation. **Beat This Moment** makes it playable.
@@ -12,7 +14,7 @@ The idea is to give Twitch communities another way to participate in the moment 
 
 **[Play the live challenge](https://beat-the-moment-35-211-225-40.sslip.io/play)** · [GCP deployment](deploy/GCP.md)
 
-[Watch the narrated prototype draft](demo/beat-this-moment-draft.mp4) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](QA.md)
+[Watch the narrated prototype draft](demo/beat-this-moment-draft.mp4) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](docs/QA.md)
 
 > Working hackathon prototype, built with Codex. The included video is a draft; it still needs footage of host publication, the real chat interaction, and the Codex build process.
 
@@ -81,16 +83,6 @@ Here, we own the game and can implement that contract directly. Supporting anoth
 
 **Current scope:** one purpose-built browser game. The prototype does not turn arbitrary Twitch video into playable game state or integrate with commercial games automatically.
 
-## Try it locally
-
-```sh
-git clone https://github.com/0xtigerclaw/beat-the-moment.git
-cd beat-the-moment
-npm start
-```
-
-Requires Node.js 22.15 or newer. There are no npm dependencies to install. Open [localhost:3000](http://localhost:3000), play a practice run, and publish a challenge. A second browser session can join through the generated viewer link. Twitch credentials are only needed for the chat integration.
-
 ## Under the hood
 
 - **Canvas game:** original procedural art, keyboard and touch controls, fixed-timestep simulation.
@@ -101,15 +93,17 @@ Requires Node.js 22.15 or newer. There are no npm dependencies to install. Open 
 - **OBS:** a compact game layout plus a transparent, read-only leaderboard source.
 - **Persistence:** challenge history and attempts stored as JSON by a single Node process.
 
-The prototype has been tested in separate browser sessions, connected to real Twitch chat, and broadcast to `0xtigerclaw`. Playback was verified in a separate signed-out Twitch viewer. See [QA.md](QA.md) for evidence and the distinction between live and mocked checks.
+The prototype has been tested in separate browser sessions, used in real Twitch chat on the hosted game, and broadcast to `0xtigerclaw`. Playback was verified in a separate signed-out Twitch viewer. See [the verification notes](docs/QA.md) for evidence and the distinction between live and mocked checks.
 
 ## Setup and operation
 
-## Run locally
+### Run locally
 
-Requires Node.js 22.15+ (Node 24+ recommended). No npm packages or installation step required.
+Requires Node.js 22.15 or newer, with Node 24 recommended. There are no npm packages to install.
 
 ```sh
+git clone https://github.com/0xtigerclaw/beat-this-moment.git
+cd beat-this-moment
 npm start
 ```
 
@@ -125,7 +119,7 @@ Open **http://localhost:3000**. Add `?broadcast=1` for the compact streaming lay
 
 The active challenge is also playable before you publish a custom moment. Practice runs are not submitted to the board. Published moments include position, vertical velocity, energy, jump-held state, jump count, course seed and simulation frame.
 
-## Connect your Twitch channel
+### Connect your Twitch channel
 
 The game works without Twitch. To demonstrate the live integration:
 
@@ -148,7 +142,7 @@ Set `TWITCH_OWNER_CHANNEL` to your owning Twitch login. With this set, the owner
 
 **Identity limitation:** `!join` links are bearer links visible in chat. Someone who copies another person's unused link can claim it. The label means “Twitch chat entry,” not independently authenticated browser ownership. Guests have no verified identity. A public competitive release should use viewer OAuth and account-bound sessions.
 
-## Remote viewers / hosting
+### Remote viewers and hosting
 
 The live demo runs independently on GCP; see [deployment and budget details](deploy/GCP.md). For another deployment, localhost links only work on the computer running the server. For remote viewers, use a Node-capable public host or an HTTPS tunnel to port 3000.
 
@@ -176,7 +170,7 @@ Server-side replay prevents fabricated scores but **does not prevent bots, tool-
 
 ## Built with Codex
 
-Codex was used to build and iterate on the game engine, saved-state challenge flow, interface, server-side verification, Twitch integration, tests, and demo setup. The [build contract](BUILD.md) records the intended behavior, and [QA.md](QA.md) records what was actually verified.
+Codex was used to build and iterate on the game engine, saved-state challenge flow, interface, server-side verification, Twitch integration, tests, and demo setup. The [build contract](docs/BUILD.md) records the intended behavior, and [the verification notes](docs/QA.md) record what was actually verified. Claude Code was used later for a code review and hardening work, including rate limiting, login recovery, moderation, and chat announcements.
 
 All art is drawn procedurally in Canvas/CSS. There are no third-party images, fonts, music, or game assets in the app.
 
@@ -185,8 +179,12 @@ All art is drawn procedurally in Canvas/CSS. There are no third-party images, fo
 - Viewer OAuth for account-bound identities.
 - Automated backups and a custom domain for the hosted challenges.
 - Game adapters for titles that can expose restorable state.
-- Streamer controls for challenge duration, moderation, and rematches.
+- Streamer controls for challenge duration and rematches, and deeper moderation.
 - Instrumentation to test whether challenges increase participation and repeat play.
+
+## License
+
+[MIT](LICENSE)
 
 ## References
 
