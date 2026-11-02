@@ -352,7 +352,7 @@ async function startRun() {
       $('identity-note').textContent =
         data.identity === 'twitch'
           ? `Racing as ${data.name}, identified through Twitch chat.`
-          : 'Guest entry, not verified. Type !join in Twitch chat to race under your Twitch name.';
+          : 'Racing as a guest. Want your Twitch name on the board? Type !join in chat.';
       challenge = data.challenge;
       sim = { ...challenge.snapshot };
       finish = challenge.finish;
