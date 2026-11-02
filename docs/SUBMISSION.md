@@ -8,6 +8,8 @@ Chat thinks it can do better. Give it the same starting state and find out.
 
 The gap between watching a streamer and playing alongside their community is still large. We wanted a streamer to turn a failed attempt into a quick, shared challenge that viewers can open immediately in their browser.
 
+We also think small games deserve a bigger place on Twitch. AI is making games far easier to build, so more indie developers will rise, and we are already seeing more small games come out. Twitch should not be limited to big AAA titles. Integrating something like this would let smaller game developers build a community around small, quick games, which are always fun to play together.
+
 ## What it does
 
 A streamer plays our browser game, Neon Freight, and publishes a saved moment from before a crash. The bot posts the challenge in chat. Viewers follow the link and retry the same game state, and their results appear on a shared leaderboard and an OBS overlay. The best completed attempt becomes a ghost to race or replay, and the bot announces each new leader.

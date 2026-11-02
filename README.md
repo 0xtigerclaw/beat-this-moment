@@ -34,6 +34,16 @@ The engagement hypothesis is simple: **make the stream's memorable moments somet
 
 These are product hypotheses, not measured retention or engagement gains. A next experiment would track challenge opens, first attempts, repeat attempts, and viewers returning to the stream after playing.
 
+## Why small games belong on Twitch
+
+AI is making games far easier to build. One person with a good idea can now ship something playable in days. That means more indie developers, and we are already seeing more small games come out.
+
+Twitch should not be limited to big AAA titles. Small, quick games have their own strengths: anyone can open one from a link, learn it in seconds, and try again right away. They are a natural fit for a live community, and they are always fun.
+
+This is an amazing opportunity for Twitch. With an integration like this, a smaller game developer could build a community around a small, quick game, and a streamer could give chat a game to play together. Beat This Moment is one small example: a quick game, built with Codex, that connects to chat and gives viewers a shared leaderboard and a reason to come back.
+
+This is our view of where things are heading, not a measured trend.
+
 ## The experience
 
 1. **Find the moment.** The streamer plays Neon Freight, our jump-and-dash browser game.
