@@ -2,6 +2,8 @@
 
 [![Tests](https://github.com/0xtigerclaw/beat-this-moment/actions/workflows/test.yml/badge.svg)](https://github.com/0xtigerclaw/beat-this-moment/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+[![Watch the Beat This Moment demo video](docs/images/thumbnail.png)](https://youtu.be/4kP4JdvQcqU)
+
 ### A streamer throws down a challenge. The community gets a shot.
 
 “Think you can do better?” is a great invitation. **Beat This Moment** makes it playable.
@@ -14,9 +16,9 @@ The idea is to give Twitch communities another way to participate in the moment 
 
 **[Play the live challenge](https://beat-the-moment-35-211-225-40.sslip.io/play)** · [GCP deployment](deploy/GCP.md)
 
-[Watch the narrated prototype draft](demo/beat-this-moment-draft.mp4) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](docs/QA.md)
+[Watch the demo video](https://youtu.be/4kP4JdvQcqU) · [Demo outline](demo/DEMO-SCRIPT.md) · [Verification notes](docs/QA.md)
 
-> Working hackathon prototype, built with Codex. The included video is a draft; it still needs footage of host publication, the real chat interaction, and the Codex build process.
+> Working hackathon prototype, built with Codex.
 
 ## Why this could matter for Twitch
 

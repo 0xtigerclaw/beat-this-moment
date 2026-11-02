@@ -41,7 +41,5 @@ Add independently authenticated viewer identities, durable cloud hosting, and in
 
 - Repository: https://github.com/0xtigerclaw/beat-this-moment
 - Live challenge: https://beat-the-moment-35-211-225-40.sslip.io/play
-- Demo video: still to add. It must be public on YouTube, under three minutes, and show the project on Twitch and how it was built with Codex.
+- Demo video: https://youtu.be/4kP4JdvQcqU
 - Codex session ID: `01a18ea7-7fb9-7881-8b09-b3e992e8e231`.
-
-This is a prepared draft. Nothing has been submitted or uploaded yet.
