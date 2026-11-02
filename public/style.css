@@ -1610,3 +1610,27 @@ body.broadcast-mode .leaderboard h3 {
 .racer small.via-twitch {
   color: #6f4bb8;
 }
+
+/* The game sits on a painting, like a framed take. */
+.frame {
+  padding: clamp(10px, 2.2vw, 34px);
+  border-radius: 14px;
+  background: var(--dark) url('/backdrop.jpg') center / cover no-repeat;
+}
+.frame .arena {
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px #0000004d,
+    0 26px 70px #00000080;
+}
+/* Phones need every pixel for the game, so the painting stays on larger screens. */
+@media (max-width: 760px) {
+  .frame {
+    padding: 0;
+    border-radius: 0;
+    background: none;
+  }
+  .frame .arena {
+    box-shadow: none;
+  }
+}

@@ -56,51 +56,54 @@
               ><span id="desk-label">THE HOST DESK</span
               ><span id="round-label">PRACTICE / NO SCORE SUBMITTED</span></div
             >
-            <div class="arena">
-              <div class="arena-top"
-                ><div
-                  ><span class="arena-badge">NF</span
-                  ><span
-                    >NEON FREIGHT<span class="arena-subtitle" id="course-subtitle"
-                      >Make the jump. Keep your nerve.</span
-                    ></span
+            <div class="frame">
+              <div class="arena">
+                <div class="arena-top"
+                  ><div
+                    ><span class="arena-badge">NF</span
+                    ><span
+                      >NEON FREIGHT<span class="arena-subtitle" id="course-subtitle"
+                        >Make the jump. Keep your nerve.</span
+                      ></span
+                    ></div
+                  ><div class="arena-levels"
+                    ><span id="difficulty" class="difficulty-chip">HARD / NIGHT SHIFT</span
+                    ><span id="game-mode" class="mode-chip">PRACTICE</span></div
                   ></div
-                ><div class="arena-levels"
-                  ><span id="difficulty" class="difficulty-chip">HARD / NIGHT SHIFT</span
-                  ><span id="game-mode" class="mode-chip">PRACTICE</span></div
-                ></div
-              >
-              <div class="canvas-wrap"
-                ><canvas
-                  id="game"
-                  width="2000"
-                  height="920"
-                  tabindex="0"
-                  aria-label="Neon Freight obstacle course. Space or up arrow to jump, Shift to dash."
-                ></canvas>
-                <div id="game-screen" class="game-screen"
-                  ><span id="screen-kicker">A LITTLE LESS TALK.</span
-                  ><h2 id="screen-title">Make your move.</h2
-                  ><p id="screen-description"
-                    >Clear the freight. Dash for a faster time.<br />One crash is all it takes.</p
-                  ><button id="start" class="button primary">Launch run <span>↗</span></button
-                  ><span class="screen-hint" id="screen-hint">SPACE TO START · NO DOWNLOADS</span></div
                 >
-                <div id="countdown" class="countdown" hidden></div>
+                <div class="canvas-wrap"
+                  ><canvas
+                    id="game"
+                    width="2000"
+                    height="920"
+                    tabindex="0"
+                    aria-label="Neon Freight obstacle course. Space or up arrow to jump, Shift to dash."
+                  ></canvas>
+                  <div id="game-screen" class="game-screen"
+                    ><span id="screen-kicker">A LITTLE LESS TALK.</span
+                    ><h2 id="screen-title">Make your move.</h2
+                    ><p id="screen-description"
+                      >Clear the freight. Dash for a faster time.<br />One crash is all it takes.</p
+                    ><button id="start" class="button primary">Launch run <span>↗</span></button
+                    ><span class="screen-hint" id="screen-hint">SPACE TO START · NO DOWNLOADS</span></div
+                  >
+                  <div id="countdown" class="countdown" hidden></div>
+                </div>
+                <div class="game-hud"
+                  ><div
+                    ><span class="stat-label">RUN TIME</span
+                    ><strong id="time">00.00<span>s</span></strong></div
+                  ><div
+                    ><span class="stat-label">DISTANCE</span
+                    ><strong id="distance">0000<span>m</span></strong></div
+                  ><div class="energy-stat"
+                    ><span class="stat-label">DASH RESERVE <span id="energy-value">100%</span></span
+                    ><div class="energy-track"><div id="energy-fill"></div></div></div
+                  ><div class="controls"
+                    ><span><kbd>SPACE</kbd> Jump</span><span><kbd>SHIFT</kbd> Dash</span></div
+                  ></div
+                >
               </div>
-              <div class="game-hud"
-                ><div
-                  ><span class="stat-label">RUN TIME</span><strong id="time">00.00<span>s</span></strong></div
-                ><div
-                  ><span class="stat-label">DISTANCE</span
-                  ><strong id="distance">0000<span>m</span></strong></div
-                ><div class="energy-stat"
-                  ><span class="stat-label">DASH RESERVE <span id="energy-value">100%</span></span
-                  ><div class="energy-track"><div id="energy-fill"></div></div></div
-                ><div class="controls"
-                  ><span><kbd>SPACE</kbd> Jump</span><span><kbd>SHIFT</kbd> Dash</span></div
-                ></div
-              >
             </div>
             <div class="touch-controls"
               ><button id="touch-jump" class="button">JUMP ↑</button
@@ -225,7 +228,8 @@
           </aside>
         </section>
         <footer
-          ><span>BUILT FOR THE MOMENT. PLAYED BY THE COMMUNITY.</span
+          ><span
+            >BUILT FOR THE MOMENT. PLAYED BY THE COMMUNITY. BACKDROP: MONET, IMPRESSION, SUNRISE (1872).</span
           ><span>BEAT THIS MOMENT / CODEX × TWITCHCON</span></footer
         >
       </main>

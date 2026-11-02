@@ -484,6 +484,7 @@ export function createApp(options = {}) {
           'style.css': 'text/css',
           'favicon.svg': 'image/svg+xml',
           'og.png': 'image/png',
+          'backdrop.jpg': 'image/jpeg',
         };
         if (Object.hasOwn(types, filename)) {
           const file = readFileSync(path.join(ROOT, 'public', filename));

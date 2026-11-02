@@ -187,7 +187,7 @@ Server-side replay prevents fabricated scores but **does not prevent bots, tool-
 
 Codex was used to build and iterate on the game engine, saved-state challenge flow, interface, server-side verification, Twitch integration, tests, and demo setup. The [build contract](docs/BUILD.md) records the intended behavior, and [the verification notes](docs/QA.md) record what was actually verified.
 
-All art is drawn procedurally in Canvas/CSS. There are no third-party images, fonts, music, or game assets in the app.
+The game's art is drawn procedurally in Canvas and CSS. The one outside image is the page's backdrop: Monet's *Impression, Sunrise* (1872), public domain, via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Monet_-_Impression,_Sunrise.jpg). The idea of framing the game on a painting comes from [Monet Shot](https://github.com/SocialAcolyte/monet-shot). There are no third-party fonts, music, or game assets.
 
 ## What comes next
 
