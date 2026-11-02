@@ -42,8 +42,6 @@ Twitch should not be limited to big AAA titles. Small, quick games have their ow
 
 This is an amazing opportunity for Twitch. With an integration like this, a smaller game developer could build a community around a small, quick game, and a streamer could give chat a game to play together. Beat This Moment is one small example: a quick game, built with Codex, that connects to chat and gives viewers a shared leaderboard and a reason to come back.
 
-This is our view of where things are heading, not a measured trend.
-
 ## The experience
 
 1. **Find the moment.** The streamer plays Neon Freight, our jump-and-dash browser game.
