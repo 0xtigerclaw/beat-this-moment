@@ -80,13 +80,11 @@ No Twitch password ever reaches this app. A host key remains as a fallback for d
 
 ![The winning ghost approaching the finish line](docs/images/ghost-replay.png)
 
-**The community board.** Completed runs rank above crashes; each entry can be replayed. These screenshots come from a local test server, with sample runs that are labeled as such: an input search over the real simulation and a deliberate crash. The hosted board holds only real attempts.
+**The community panel, from the hosted game.** Everything sits under the game: the entry bar, a live board where completed runs rank above crashes and every entry can be replayed, and an invite card with a ready-to-paste message and the chat commands. The tags in the card are made-up examples.
 
-![Challenge entry and server-verified community leaderboard](docs/images/leaderboard.png)
+![Entry bar, live leaderboard, and invite card from the hosted game](docs/images/community.png)
 
-**Bring your chat.** Every challenge comes with a ready-to-paste message, the chat commands, and a link. The names shown are made-up examples.
-
-![Invite card with a ready-to-paste challenge message](docs/images/community.png)
+The gameplay screenshots above come from a local test server and show a labeled sample run, found by an input search over the real simulation. The hosted board holds only real attempts.
 
 ## A path to deeper game integration
 
