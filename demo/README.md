@@ -5,9 +5,9 @@ The narrated draft, `beat-this-moment-draft.mp4`, is 78 seconds of H.264 1280×7
 - `DEMO-SCRIPT.md`: the fuller presentation outline.
 - `build_draft.py`: rebuilds the draft from those local recordings. Run `uv run --with pillow python demo/build_draft.py` from the project root. It needs macOS text-to-speech and FFmpeg.
 
-## Still needed before submission
+## Final videos
 
-The draft predates the current hard course and the bot's chat announcements. It also does not show the host publishing a moment, the real chat interaction, or Codex build footage. Replace it with a final video under three minutes, on public YouTube.
+`build_video.mjs` builds five themed versions into `demo/final`, with captions from the narration timing. `generate_voice.py` makes the narration with HeyGen, and `record_live.mjs` records the signed-out Twitch and viewer shots. Footage and voice files stay local. None of these are needed to run the app.
 
 ## OBS scenes
 

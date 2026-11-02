@@ -1,45 +1,97 @@
-# Beat This Moment — demo outline
+# Beat This Moment: final demo script
 
-Target length: 2 minutes 30 seconds, with time left below the three-minute limit.
+Target length: about 2:10. Hard limit: under 3:00. Submission closes November 2, 2026 at 2:00 pm Pacific.
 
-## 0:00–0:15 — The idea
+The rules need three things on screen: the project working on Twitch, how it was built with Codex, and no third-party music or material without permission. The Twitch and Codex shots below cover the first two. Use no music.
 
-“Chat always says they could have done better. Beat This Moment gives them a shot: the streamer turns a failed run into a playable challenge, and viewers start from the same saved game state.”
+## Test before filming
 
-Show the game and current board. This prototype uses its own browser game; it does not turn arbitrary Twitch video into playable game state.
+The publish post and the lead post both worked in real Twitch chat on November 2. Lead posts are at least 30 seconds apart, so leave a gap between finishes. Keep the **[if seen]** lines only if the post is on screen in your footage.
 
-## 0:15–0:40 — Streamer creates the challenge
+`!join` from a second Twitch account was not tested, so film it from the broadcaster account and say so. Wait more than 10 seconds between `!challenge` and `!join`, because the bot ignores a second command from the same person inside that window. Say only what the footage shows.
 
-Launch a practice run. Jump with Space and dash with Shift. After a crash, select Challenge chat. Show the generated viewer link. Publishing a new challenge starts its own board; previous challenges stay in local history.
+## Script
 
-## 0:40–1:05 — Twitch connection
+One question runs through the whole video: could chat have done better? It is asked at the start and answered at the end. The narration talks to "you", the streamer.
 
-Show signing in with Twitch and the connected channel status, then the bot's automatic post when the challenge is published. In the channel's chat, send `!challenge` and show the bot returning the playable URL. Open that link as the viewer. Only claim this live behavior when the reply is visibly present.
+### The question
 
-## 1:05–1:40 — Viewer attempts and verification
+**Show:** the channel page on twitch.tv, live. The run ends in a crash. Card with what chat says, then card with the question.
 
-Enter a demo player name and take the challenge. Show the resulting score on the shared board, and the bot's chat post if the run takes the lead. Explain: “The server replays the inputs to verify the result.” Completed runs rank ahead of crashes, with completion time deciding the winner.
+> You're live on Twitch. You crash, and chat says what it always says. Easy. I'd have made that. So, could they?
 
-## 1:40–1:55 — Replay
+### The answer starts here
 
-Use a leaderboard replay control to watch a recorded ghost. If the demo attempt crashes, use an existing completed run and identify it accurately.
+**Show:** title card, then a statement card.
 
-## 1:55–2:20 — Built with Codex
+> This is Beat This Moment. I'm Swayam. Chat can talk, but it can't play your run. Now it can.
 
-Include actual footage of the Codex build conversation and source or test output. Explain the deterministic game engine, saved snapshots, Twitch chat integration, and verified leaderboard. Do not show `.env`, OAuth tokens, host keys, stream keys, private tabs, or account settings.
+### Your crash
 
-## 2:20–2:30 — Close
+**Show:** Sign in with Twitch, the consent screen, connected status. Run, crash, Challenge chat. Cut to the post in Twitch chat.
 
-“One moment. The same starting state. A whole community trying to beat it.”
+> You sign in through Twitch, and your channel is connected. You play Neon Freight, a small jump and dash game we built for this. You crash. One click on Challenge chat saves the moment just before it. And it lands in chat right away.
+
+### Chat's turn
+
+**Show:** Twitch chat. `!challenge`, and the link comes back. Wait more than 10 seconds, then `!join` from the same account, and the personal link comes back.
+
+> Now it's chat's turn. There's nothing to install. The challenge command gives anyone the link. The join command gives you your own link, so your run carries your Twitch name. I'm using my own account here.
+
+### Same moment
+
+**Show:** the viewer's browser, then a card, then the run on the board. A new run arrives with no reload: first on the host's page, then on the live stream beside chat.
+
+> Here's a viewer's run. Same position. Same speed. Same energy. Same course. Same moment. Different player. The board updates live, on the page and on stream. Finishes rank above crashes, and the fastest finish leads.
+
+### The rematch
+
+**Show:** a run racing the ghost, a replay from the board, the host's remove button, the lead post in chat.
+
+> Now there's something to chase. The best finish becomes a ghost, and everyone races against it. Any run can be replayed. You can remove anyone from the board. And when someone takes the lead, chat hears about it. So the next rematch begins.
+
+### So let's push
+
+**Show:** the real replies from the hosted game to two fake runs (`demo/footage/refused.json`), each stamped Refused.
+
+> So let's push. Send the server a made-up run. Refused. Send a finished run, faster than anyone could play it. Refused. The server replays every input and works out the score itself. Bots can still play. But a made-up time won't count.
+
+### Built with Codex
+
+**Show:** source in `public/engine.js`, then `npm test` passing all 59 tests. The Codex thread goes in through the session ID on the submission form, not on screen.
+
+> We built this with Codex. Codex helped us write one game engine that runs in both the browser and the server. That's why a replay comes out exactly the same. It also helped build the Twitch connection: sign-in, live chat events, and chat posts. And 59 automated tests check it on every push.
+
+### The answer
+
+**Show:** a card on small games, the board, then the closing card. Its last line appears phrase by phrase.
+
+> AI is making small games far easier to build. They open from a link, and you learn them in seconds. Twitch doesn't have to be only big titles. So, could chat have done better? Don't argue. Check the board. This is Beat This Moment. You crash. Chat plays. The board decides.
+
+## Stay accurate
+
+- Don't say Codex wrote everything. Say "built with Codex" or "helped".
+- Don't say this works with any game, or with Twitch video. It supports one game we built.
+- Don't say cheating is impossible. Replay stops made-up scores, but not bots or tool-assisted inputs.
+- Don't call a run verified Twitch identity. `!join` links are visible in chat and are not a viewer login.
+- Chat posts come from the broadcaster's own account, so don't call it a separate bot account on screen.
+
+## Keep off screen
+
+`.env`, OAuth tokens, host keys, stream keys, private tabs, account settings, and browser profile details.
 
 ## Recording setup
 
 - OBS profile and scene collection: `Beat This Moment`.
 - Capture: dedicated Chrome game window, not the full display.
 - Game address: https://beat-the-moment-35-211-225-40.sslip.io/?broadcast=1
-- Audio capture is muted. Add narration in an editor, or deliberately configure a microphone before recording narration.
+- Viewer: use a separate browser or private window, not the OBS capture of the host.
 - Output: Hybrid MP4, 1280×720 at 30 FPS, in this directory.
-- The public app runs independently on GCP; use the hosted address above.
+- Audio capture is muted. Add narration in an editor, or set up a microphone before recording.
 - Streaming credentials are configured separately. This document contains no credentials.
 
-This is a prepared outline, not evidence of a finished or uploaded video.
+## Publish
+
+Upload to YouTube as public. Open the link while signed out to check it plays, then add it to the Devpost form.
+
+This is the script, not evidence of a finished or uploaded video.

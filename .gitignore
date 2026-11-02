@@ -8,6 +8,10 @@ output/
 .DS_Store
 # Local OBS recordings and intermediate demo assets.
 demo/edit/
+demo/voice/
+demo/shots/
+demo/footage/
+demo/final/
 demo/*.mov
 demo/*.mp4
 !demo/beat-this-moment-draft.mp4
