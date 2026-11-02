@@ -268,7 +268,7 @@ async function refresh(data) {
   $('setup-status').textContent =
     status.error ||
     (status.connected
-      ? `Signed in through Twitch as ${status.channel}. Chat commands are listening.`
+      ? `${status.channel} is connected through Twitch sign-in. Chat commands are listening.`
       : status.configured
         ? `Sign in as ${status.ownerChannel || 'the broadcaster'}. Twitch will ask permission to read and send chat messages.`
         : 'Twitch is not connected. Add your application credentials to enable authorization.');
