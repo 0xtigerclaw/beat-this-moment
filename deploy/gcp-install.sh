@@ -16,7 +16,9 @@ rm -rf /opt/beat-this-moment/migration
 install -o root -g root -m 600 "$config" /etc/beat-this-moment.env
 cat >/etc/caddy/Caddyfile <<CADDY
 $site {
-    encode gzip
+    # Compression holds back the live board's event stream, so /events stays uncompressed.
+    @compressible not path /events
+    encode @compressible gzip
     reverse_proxy 127.0.0.1:3000 {
         flush_interval -1
     }
