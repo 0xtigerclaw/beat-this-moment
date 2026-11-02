@@ -14,9 +14,9 @@ The idea is to give Twitch communities another way to participate in the moment 
 
 ![The playable challenge and community leaderboard](docs/images/challenge.png)
 
-**[Play the live challenge](https://beat-the-moment-35-211-225-40.sslip.io/play)** · [GCP deployment](deploy/GCP.md)
+**[Play the live challenge!](https://beat-the-moment-35-211-225-40.sslip.io/play)**
 
-[Watch the demo video](https://youtu.be/4kP4JdvQcqU) · [Verification notes](docs/QA.md)
+[Watch the demo video](https://youtu.be/4kP4JdvQcqU)
 
 > Working hackathon prototype, built with Codex.
 
